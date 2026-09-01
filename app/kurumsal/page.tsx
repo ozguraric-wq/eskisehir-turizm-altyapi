@@ -21,6 +21,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
+import { siteAsset } from "@/lib/site-path";
 
 export const metadata: Metadata = {
   title: "Kurumsal",
@@ -148,7 +149,7 @@ export default function CorporatePage() {
       <section className="content-section soft-section" id="kurumsal-kimlik">
         <div className="site-shell grid items-center gap-12 lg:grid-cols-[.72fr_1.28fr]">
           <div className="flex min-h-[560px] items-center justify-center rounded-[2rem] border border-[#ded7cc] bg-white p-10 shadow-xl shadow-black/5">
-            <img className="max-h-[500px] w-auto object-contain" src="/brand/logo-full.webp" alt="Eskişehir Turizm Altyapı Hizmet Birliği logosu" />
+            <img className="max-h-[500px] w-auto object-contain" src={siteAsset("/brand/logo-full.webp")} alt="Eskişehir Turizm Altyapı Hizmet Birliği logosu" />
           </div>
           <div>
             <p className="eyebrow">Kurumsal kimlik</p>

@@ -27,6 +27,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
+import { siteAsset } from "@/lib/site-path";
 
 export const metadata: Metadata = {
   title: "Projeler ve Faaliyet Alanları",
@@ -134,7 +135,7 @@ export default function ProjectsPage() {
       <section className="content-section soft-section" id="kamp-karavan">
         <div className="site-shell grid gap-10 lg:grid-cols-2">
           <div className="relative min-h-[520px] overflow-hidden rounded-[2rem]">
-            <img className="absolute inset-0 h-full w-full object-cover" src="/media/motocross-caravan.webp" alt="Düzenli kamp ve karavan altyapısı ile kontrollü spor alanını gösteren temsili görünüm" />
+            <img className="absolute inset-0 h-full w-full object-cover" src={siteAsset("/media/motocross-caravan.webp")} alt="Düzenli kamp ve karavan altyapısı ile kontrollü spor alanını gösteren temsili görünüm" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
             <div className="absolute right-6 bottom-6 left-6 text-white">
               <span className="rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-[#65061f]">Temsili planlama görseli</span>
@@ -176,7 +177,7 @@ export default function ProjectsPage() {
 
           <article className="mt-12 overflow-hidden rounded-[2rem] bg-[#17212b] text-white" id="film-festivali">
             <div className="grid lg:grid-cols-2">
-              <div className="relative min-h-[430px]"><img className="absolute inset-0 h-full w-full object-cover" src="/media/film-academy.webp" alt="Genç sinemacılar ve açık hava film gösterimi" /></div>
+              <div className="relative min-h-[430px]"><img className="absolute inset-0 h-full w-full object-cover" src={siteAsset("/media/film-academy.webp")} alt="Genç sinemacılar ve açık hava film gösterimi" /></div>
               <div className="p-8 md:p-12">
                 <span className="status-pill border-white/20 bg-white/10 text-white">Planlanan program</span>
                 <div className="flex flex-wrap gap-2"><span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">30 yaş altı</span><span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">4 gün</span><span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">Haziran 2027 hedefi</span></div>
@@ -227,7 +228,7 @@ export default function ProjectsPage() {
                   {["Şampiyona parkuru ile eğitim parkurlarının ayrılması", "Türkiye Şampiyonası etapları ve Avrupa ölçekli organizasyon hedefi", "Sporcu kampları ve genç sporcu eğitimleri", "Han'dan Seyitgazi, Frigya ve kent merkezine yayılan ziyaretçi akışı", "Konaklama, ulaşım, yeme-içme ve yerel hizmetlerde ekonomik etki"].map((item) => <div className="flex gap-2.5 text-sm font-semibold" key={item}><CheckCircle2 className="shrink-0 text-[#8e0d2c]" aria-hidden="true" size={19} />{item}</div>)}
                 </div>
               </div>
-              <div className="relative min-h-[520px]"><img className="absolute inset-0 h-full w-full object-cover" src="/media/motocross-caravan.webp" alt="Motokros eğitim parkuru ve kamp-karavan alanını gösteren temsili planlama görseli" /><span className="absolute right-5 bottom-5 rounded-full bg-[#17212b]/90 px-3 py-1.5 text-xs font-bold text-white">Korunan alanlardan ayrı planlama</span></div>
+              <div className="relative min-h-[520px]"><img className="absolute inset-0 h-full w-full object-cover" src={siteAsset("/media/motocross-caravan.webp")} alt="Motokros eğitim parkuru ve kamp-karavan alanını gösteren temsili planlama görseli" /><span className="absolute right-5 bottom-5 rounded-full bg-[#17212b]/90 px-3 py-1.5 text-xs font-bold text-white">Korunan alanlardan ayrı planlama</span></div>
             </div>
           </article>
 

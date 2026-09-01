@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { siteAsset } from "@/lib/site-path";
 
 const intl = {
   en: { line: "The public capacity steering tourism infrastructure, investment, data and destination standards across all 14 districts.", institution: "Institution", city: "14 districts", routes: "Routes", programmes: "Programmes", charter: "Draft charter", note: "Institutional concept developed within Eskişehir Vision 2036. Legal structure and programme schedules become final through competent authority decisions." },
@@ -22,7 +23,7 @@ export function SiteFooter() {
     <footer className="footer">
       <div className="site-shell footer-grid">
         <div className="footer-brand">
-          <div className="footer-logo"><img src="/brand/logo-mark.webp" alt="" /><h2>Eskişehir Turizm Altyapı Hizmet Birliği</h2></div>
+          <div className="footer-logo"><img src={siteAsset("/brand/logo-mark.webp")} alt="" /><h2>Eskişehir Turizm Altyapı Hizmet Birliği</h2></div>
           <p className="mt-5 max-w-md text-sm leading-7">{copy.line}</p>
         </div>
         <div><h3>{copy.institution}</h3><div className="footer-links"><Link href={foreign ? `${base}#institution` : "/kurumsal"}>{copy.institution}</Link><Link href={foreign ? `${base}#impact` : "/kurumsal#kalkinma-plani"}>Vizyon Eskişehir 2036</Link><Link href="/tuzuk">{copy.charter}</Link><Link href="/duyurular">Duyurular</Link></div></div>

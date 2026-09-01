@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, BarChart3, Building2, Database, ExternalLink, Landmark, Mountain, ShieldCheck, UsersRound } from "lucide-react";
 import { InternationalRoutePlanner } from "@/components/international-route-planner";
 import { internationalCopy, type InternationalLocale } from "@/lib/international";
+import { siteAsset } from "@/lib/site-path";
 
 const locales = Object.keys(internationalCopy) as InternationalLocale[];
 
@@ -28,7 +29,7 @@ export default async function InternationalPage({ params }: { params: Promise<{ 
   return (
     <main id="ana-icerik" lang={locale} dir={copy.dir} className={copy.dir === "rtl" ? "rtl-page" : ""}>
       <section className="intl-hero">
-        <img src="/media/eskisehir-hero.webp" alt="Eskişehir landscape" />
+        <img src={siteAsset("/media/eskisehir-hero.webp")} alt="Eskişehir landscape" />
         <div className="intl-hero-overlay" />
         <div className="site-shell intl-hero-inner"><span>{copy.eyebrow}</span><h1>{copy.hero}</h1><p>{copy.lead}</p><div className="flex flex-wrap gap-3"><a className="button-light" href="#institution">{copy.institutionTitle}<ArrowRight aria-hidden="true" size={16} /></a><a className="intl-ghost-button" href="#routes">{copy.routesTitle}</a></div></div>
       </section>

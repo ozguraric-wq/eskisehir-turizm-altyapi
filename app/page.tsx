@@ -22,6 +22,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { districts, projectCards } from "@/lib/content";
+import { siteAsset } from "@/lib/site-path";
 
 const serviceIcons = [Building2, BarChart3, ShieldCheck, UsersRound, Bot];
 const projectIcons = [CircleUserRound, Route, Caravan, Film, Sparkles, Mountain];
@@ -32,7 +33,7 @@ export default function Home() {
       <section className="relative isolate min-h-[720px] overflow-hidden bg-[#17212b] text-white">
         <img
           className="absolute inset-0 -z-20 h-full w-full object-cover"
-          src="/media/eskisehir-hero.webp"
+          src={siteAsset("/media/eskisehir-hero.webp")}
           alt="Eskişehir'in ovalarını, kaya dokusunu, su kaynaklarını ve bağlantı yollarını temsil eden panoramik görünüm"
         />
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(17,24,32,.96)_0%,rgba(17,24,32,.86)_38%,rgba(17,24,32,.32)_72%,rgba(17,24,32,.15)_100%)]" />
@@ -179,7 +180,7 @@ export default function Home() {
         <div className="site-shell">
           <div className="grid overflow-hidden rounded-[2rem] bg-[#17212b] text-white lg:grid-cols-2">
             <div className="relative min-h-[420px]">
-              <img className="absolute inset-0 h-full w-full object-cover" src="/media/film-academy.webp" alt="Genç sinemacıların açık hava gösterimiyle birlikte yürüttüğü uygulamalı film çalışması" />
+              <img className="absolute inset-0 h-full w-full object-cover" src={siteAsset("/media/film-academy.webp")} alt="Genç sinemacıların açık hava gösterimiyle birlikte yürüttüğü uygulamalı film çalışması" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
               <span className="absolute bottom-5 left-5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-[#65061f]">Kültür · Eğitim · İlçeler</span>
             </div>
@@ -203,7 +204,7 @@ export default function Home() {
               <Link className="button-primary mt-8 self-start" href="/projeler#motokros">Spor turizmi kapsamı <ArrowRight aria-hidden="true" size={17} /></Link>
             </div>
             <div className="relative min-h-[420px] lg:order-last">
-              <img className="absolute inset-0 h-full w-full object-cover" src="/media/motocross-caravan.webp" alt="Korunan alanlardan ayrı planlanan motokros parkuru ile düzenli kamp ve karavan alanını gösteren temsili görünüm" />
+              <img className="absolute inset-0 h-full w-full object-cover" src={siteAsset("/media/motocross-caravan.webp")} alt="Korunan alanlardan ayrı planlanan motokros parkuru ile düzenli kamp ve karavan alanını gösteren temsili görünüm" />
               <span className="absolute right-5 bottom-5 rounded-full bg-[#17212b]/90 px-3 py-1.5 text-xs font-bold text-white">Temsili planlama görseli</span>
             </div>
           </div>

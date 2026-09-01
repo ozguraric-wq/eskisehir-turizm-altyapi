@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Globe2, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { siteAsset } from "@/lib/site-path";
 
 const languages = [
   ["tr", "Türkçe", "/"],
@@ -81,7 +82,7 @@ export function SiteHeader() {
       <header className="site-header">
         <div className="site-shell header-main header-shell">
           <Link className="brand-lockup" href={base || "/"} aria-label={copy.home}>
-            <img src="/brand/logo-mark.webp" alt="Eskişehir Turizm Altyapı Hizmet Birliği" />
+            <img src={siteAsset("/brand/logo-mark.webp")} alt="Eskişehir Turizm Altyapı Hizmet Birliği" />
             <span>
               <span className="brand-title">Eskişehir Turizm Altyapı Hizmet Birliği</span>
               <span className="brand-subtitle">{copy.subtitle}</span>

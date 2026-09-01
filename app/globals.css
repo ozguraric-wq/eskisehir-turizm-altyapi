@@ -696,3 +696,7 @@ img { max-width: 100%; }
     animation-iteration-count: 1 !important;
   }
 }
+
+.auth-pending body {
+  visibility: hidden;
+}
