@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { MobileShell } from "@/components/mobile-shell";
 import "./globals.css";
 import "./mobile.css";
+import "./qr.css";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const isGitHubPages = process.env.NEXT_PUBLIC_GITHUB_PAGES === "true";
@@ -51,13 +52,13 @@ export default function RootLayout({
     <html lang="tr" className={isGitHubPages || isMobile ? "auth-pending" : undefined} data-mobile-app={isMobile ? "" : undefined}>
       {isGitHubPages || isMobile ? <Script src={`${basePath}/auth.js`} strategy="beforeInteractive" /> : null}
       <body>
-        <a className="skip-link" href="#ana-icerik">
+        <a className="skip-link site-skip-link" href="#ana-icerik">
           Ana içeriğe geç
         </a>
         <SiteHeader />
+        <MobileShell />
         {children}
         <SiteFooter />
-        <MobileShell />
       </body>
     </html>
   );

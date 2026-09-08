@@ -12,6 +12,7 @@ import java.util.Map;
 public class MainActivity extends BridgeActivity {
     @Override public void onCreate(Bundle savedInstanceState) {
         registerPlugin(TripPrintPlugin.class);
+        registerPlugin(GuideSpeechPlugin.class);
         super.onCreate(savedInstanceState);
         // Next exports a real index.html per route. Keep clean URLs on reload,
         // after login and after an external navigation round trip.

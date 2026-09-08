@@ -8,6 +8,8 @@ import { clock,encodePreferences } from "@/lib/routing/engine";
 import { copyFor } from "@/lib/routing/copy";
 import { placeById,foodAreas,zoneNames } from "@/lib/routing/data";
 import { placeQuery } from "@/lib/routing/exports";
+import { QrShare } from "./qr-share";
+import { planQrUrl } from "@/lib/qr/links";
 import { RouteDiscoveries } from "./route-discoveries";
 import { discoveriesForDay } from "@/lib/routing/heritage";
 import type { Locale,ScheduleItem } from "@/lib/routing/types";
@@ -36,7 +38,7 @@ export function SavedTrips({locale="tr"}:{locale?:Locale}) {
       <div className="app-day-picker" role="group" aria-label={rc.days}>{trip.plan.days.map((d,i)=><button type="button" key={i} aria-pressed={dayIndex===i} onClick={()=>setDay(i)}>{rc.day} {i+1}<small>{d.date}</small></button>)}</div>
       <div className="app-next-stop"><span>{nextItem?c.remaining:c.complete}</span><h2>{nextItem?title(nextItem):trip.title}</h2>{nextItem&&<><p>{clock(nextItem.start)} · {zoneNames[nextItem.zone]}</p><a className="app-primary" href={navigationUrl} target="_blank" rel="noreferrer"><Navigation size={18}/>{c.navigate}</a><small>{c.navHint}</small></>}</div>
       <ol className="app-trip-timeline">{day.items.filter(item=>item.kind!=="return").map(item=>{const key=stopKey(dayIndex,item.id),done=trip.completed.includes(key);return <li key={key} className={done?"is-complete":""}><button type="button" className="app-visit-toggle" aria-pressed={done} aria-label={`${c.mark}: ${title(item)}`} onClick={()=>persist(trips.map(t=>t.id===trip.id?toggleVisit(t,key):t))}>{done?<Check size={20}/>:item.kind==="meal"?<Utensils size={18}/>:<MapPin size={18}/>}</button><div><span>{clock(item.start)}–{clock(item.end)}</span><h3>{title(item)}</h3><details><summary>{item.kind==="visit"?c.story:c.foodBreak}</summary><p>{item.kind==="visit"?placeById[item.id].summary[locale]:trip.preferences.meal==="picnic"?rc.picnicNote:foodAreas.find(f=>f.zone===item.zone)?.[trip.preferences.meal==="vegetarian"?"vegetarian":"local"][locale]??rc.packedNote}</p>{item.kind==="visit"&&<a href={placeById[item.id].source} target="_blank" rel="noreferrer">{c.sources}</a>}</details>{discoveries[item.id]?.length>0&&<RouteDiscoveries items={discoveries[item.id]} locale={locale} area={`${zoneNames[item.zone]}, Eskişehir`}/>}</div></li>})}</ol>
-      <p className="app-small">{rc.modelNote}</p><Link className="app-secondary" href={routeHref(trip)}>{c.edit}<ChevronRight size={17}/></Link>
+      <QrShare url={()=>planQrUrl(trip.preferences,trip.plan.id)} title={trip.title} locale={locale}/><p className="app-small">{rc.modelNote}</p><Link className="app-secondary" href={routeHref(trip)}>{c.edit}<ChevronRight size={17}/></Link>
     </section>}
   </main>;
 }

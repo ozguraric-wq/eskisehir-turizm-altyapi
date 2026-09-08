@@ -30,7 +30,7 @@ const projectIcons = [CircleUserRound, Route, Caravan, Film, Sparkles, Mountain]
 
 export default function Home() {
   return (
-    <main id="ana-icerik">
+    <main id="ana-icerik" className="web-home">
       <CityBanner />
 
       <section className="border-b border-[#ded7cc] bg-white">

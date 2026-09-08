@@ -64,3 +64,7 @@ iOS: `npm run build:mobile`, `npx cap sync ios`, ardından Mac üzerinde `npx ca
 - [OpenAI: GPT-4.1 mini](https://developers.openai.com/api/docs/models/gpt-4.1-mini)
 
 Turizm kaynağı açıklamaları mevcut `docs/LEZZET-VE-MIRAS.md` ve `lib/routing` kataloğunda korunur.
+
+## 1.1 · QR keşif ve yeni mobil arayüz
+
+Modern ana ekran, ayrı Birlik menüsü, 47 nokta/43 tema için sabit QR kimlikleri, kamera/fotoğraf/kısa kod ile okuma, kişisel gezi QR paylaşımı, A5 kart çıktısı ve cihazda sesli okuma eklendi. Ayrıntılı işleyiş, araştırma ve saha uygulaması sınırları: `docs/QR-REHBER-SISTEMI.md`.

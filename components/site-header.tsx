@@ -60,6 +60,7 @@ export function SiteHeader() {
   const discoveryLabel = heritageCopy(locale).menu;
   const languageHref = (code: typeof locale, fallback: string) => {
     if (pathname.includes("/lezzet-ve-miras")) return heritagePath(code);
+    if (pathname.includes("/qr")) return `${code === "tr" ? "" : `/${code}`}/qr`;
     if (pathname.includes("/gezilerim")) return `${code === "tr" ? "" : `/${code}`}/gezilerim`;
     if (pathname.includes("/rotani-olustur")) return `${code === "tr" ? "" : `/${code}`}/rotani-olustur`;
     return fallback;

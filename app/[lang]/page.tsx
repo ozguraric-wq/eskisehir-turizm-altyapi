@@ -28,7 +28,7 @@ export default async function InternationalPage({ params }: { params: Promise<{ 
   const heritageIcons = [Mountain, Landmark, ShieldCheck, UsersRound];
 
   return (
-    <main id="ana-icerik" lang={locale} dir={copy.dir} className={copy.dir === "rtl" ? "rtl-page" : ""}>
+    <main id="ana-icerik" lang={locale} dir={copy.dir} className={`web-home ${copy.dir === "rtl" ? "rtl-page" : ""}`}>
       <CityBanner locale={locale} />
 
       <section className="content-section" id="institution"><div className="site-shell"><div className="max-w-4xl"><p className="eyebrow">2036</p><h2 className="section-title">{copy.institutionTitle}</h2><p className="section-copy">{copy.institutionLead}</p></div><div className="intl-card-grid">{copy.institution.map(([title, text], index) => { const Icon = impactIcons[index]; return <article className="card" key={title}><span className="icon-box"><Icon aria-hidden="true" size={21} /></span><h3>{title}</h3><p>{text}</p></article>; })}</div></div></section>
