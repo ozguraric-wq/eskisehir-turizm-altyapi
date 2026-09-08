@@ -8,6 +8,9 @@ import { siteAsset } from "@/lib/site-path";
 import { TransitJourneyCard, TransitCoverage } from "./route-transit";
 import { transitCopy, rideText } from "@/lib/routing/transit-copy";
 import { TRANSIT_CHECKED_ON } from "@/lib/routing/transit-data";
+import { RouteDiscoveries } from "./route-discoveries";
+import { discoveriesForDay, discoveryBadge, discoveryText } from "@/lib/routing/heritage";
+import { heritageCopy } from "@/lib/routing/heritage-copy";
 import { RouteHospitality } from "./route-hospitality";
 import { calendarFile, legMapUrl, navigationSegments, phoneMapUrl, printDocumentHtml } from "@/lib/routing/exports";
 import { copyFor } from "@/lib/routing/copy";
@@ -19,7 +22,7 @@ const STORAGE_KEY = "etahb-discovery-plans-v2";
 type SavedPlan = { id: string; title: string; p: Preferences; planId: string; version: string };
 
 export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
-  const c = copyFor(locale), tc = transitCopy(locale);
+  const c = copyFor(locale), tc = transitCopy(locale), hc = heritageCopy(locale);
   const [draft, setDraft] = useState<Preferences>(defaults);
   const [applied, setApplied] = useState<Preferences>(defaults);
   const [result, setResult] = useState(() => generatePlans(defaults));
@@ -133,6 +136,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
     if (!current) return;
     const lines = [c.eyebrow, planName(current), c.demo, `${c.transport}: ${c[applied.mode]}`, `${c.origin}: ${districtDiscovery(applied) ? c.districtStart : zoneNames[applied.origin]}`, ""];
     current.days.forEach((d, i) => {
+      const discoveries=discoveriesForDay(d,applied);
       lines.push(`${c.day} ${i + 1}${d.date ? ` · ${d.date}` : ""}`, `${clock(d.start)} · ${zoneNames[d.origin]}`);
       if (districtDiscovery(applied)) lines.push(c.localAccess, ...(applied.mode === "transit" ? [c.localTransit] : []));
       if (applied.mode === "transit") lines.push(tc.snapshot, `${tc.checked}: ${TRANSIT_CHECKED_ON}`);
@@ -141,6 +145,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
         const title = item.kind === "visit" ? placeById[item.id].name : item.kind === "return" ? c.return : `${item.id.endsWith("dinner") ? c.dinner : c.lunch} · ${food?.name ?? zoneNames[item.zone]}`;
         lines.push(`${clock(item.start)}–${clock(item.end)} ${title}`, `  ~${item.leg.km} km · ${item.leg.minutes} ${c.min} ${c.duration}`);
         item.leg.transit?.rides.forEach(ride => lines.push(rideText(ride, locale)));
+        if(discoveries[item.id]?.length) lines.push(discoveryText(discoveries[item.id],locale,true),hc.noDetour,hc.shoppingNote);
         if (item.kind === "visit") lines.push(`  ${placeById[item.id].summary[locale]}`, `  ${placeById[item.id].source}`);
         if (item.kind === "meal") lines.push(`  ${applied.meal === "picnic" ? c.picnicNote : !food ? c.packedNote : food[applied.meal][locale]}`);
       });
@@ -207,7 +212,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
               <header className="rp-plan-header"><div><span>{current.days.length} {c.day} · {c[applied.mode]}</span><h3>{planName(current)}</h3><p>{current.covered.map(i => c[i]).join(" · ")}</p></div><Compass className="rp-plan-compass" size={74} strokeWidth={1} aria-hidden="true" /></header>
               <details className="rp-action-menu rp-no-print" open={!compact || actionsOpen}><summary onClick={e => { e.preventDefault(); setActionsOpen(!actionsOpen); }}>{c.planActions}<ChevronDown size={17} aria-hidden="true" /></summary><div className="rp-actions"><button type="button" onClick={save}><Bookmark size={17} aria-hidden="true" />{c.save}</button><button type="button" onClick={share}><Share2 size={17} aria-hidden="true" />{c.share}</button><button type="button" onClick={download}><Download size={17} aria-hidden="true" />{c.download}</button><button type="button" onClick={exportCalendar}><CalendarPlus size={17} aria-hidden="true" />{c.calendar}</button><button type="button" onClick={printPlan}><Printer size={17} aria-hidden="true" />{c.print}</button></div><p className="rp-calendar-help">{applied.date ? c.calendarNote : c.calendarDate}{!applied.date && <button type="button" onClick={() => goToStep(0)}>{c.chooseDate} →</button>}</p></details>
               <div className="rp-day-tabs rp-no-print" role="group" aria-label={c.days}>{current.days.map((d, i) => <button type="button" aria-pressed={dayIndex === i} className={dayIndex === i ? "selected" : ""} key={i} onClick={() => { setDayIndex(i); setExpandedStop(null); }}>{c.day} {i + 1}{d.date && <small>{d.date}</small>}</button>)}</div>
-              {current.days.map((dayPlan, di) => { const dayPrefs = preferencesForDay(dayPlan, applied); return <div key={di} className={`rp-day-content ${di === dayIndex ? "is-active" : ""}`}>
+              {current.days.map((dayPlan, di) => { const dayPrefs = preferencesForDay(dayPlan, applied), discoveryMap = discoveriesForDay(dayPlan, applied); return <div key={di} className={`rp-day-content ${di === dayIndex ? "is-active" : ""}`}>
                 <div className="rp-print-day">{c.day} {di + 1} {dayPlan.date}</div>
                 <div className="rp-day-start"><div><MapPin size={19} aria-hidden="true" /><strong>{zoneNames[dayPlan.origin]}</strong><span>{clock(dayPlan.start)} · {c.localStart}</span></div>{districtDiscovery(applied) && <><p>{c.localAccess}</p>{applied.mode === "transit" && !urbanZones.includes(dayPlan.origin) && <p>{c.localTransit}</p>}{dayPlan.origin !== applied.origin && <a href={legMapUrl(`origin:${applied.origin}`, `origin:${dayPlan.origin}`, { ...applied, mode: applied.mode === "transit" ? "transit" : "car" })} target="_blank" rel="noreferrer">{c.accessLink}<ExternalLink size={14} aria-hidden="true" /></a>}</>}</div><details className="rp-navigation rp-no-print"><summary><Navigation size={18} aria-hidden="true" />{c.navigation}<ChevronDown size={17} aria-hidden="true" /></summary><div><p>{c.navigationNote}</p>{navigationSegments(dayPlan, applied).map((part, index, parts) => <a key={index} href={part.url} target="_blank" rel="noreferrer">{parts.length > 1 ? `${c.navigationPart} ${index + 1} / ${parts.length}` : c.navigation}<ExternalLink size={15} aria-hidden="true" /></a>)}</div></details><div className="rp-metrics"><div><Navigation size={19} aria-hidden="true" /><strong>~{Math.round(dayPlan.km)} km</strong><span>{c.distance}</span></div><div><Clock3 size={19} aria-hidden="true" /><strong>{fmtDuration(dayPlan.travel)}</strong><span>{c.duration}</span></div><div><Footprints size={19} aria-hidden="true" /><strong>~{dayPlan.walking} km</strong><span>{c.walking}</span></div></div>
                 <div className="rp-timeline"><h4>{c.timing}</h4>{applied.mode === "transit" && !dayPlan.items.some(item => item.leg.transit) && <p className="rp-small-note">{tc.onlyWalk}</p>}<p className="rp-expand-hint">{c.tapDetails}</p><div className="rp-origin"><span>{clock(dayPlan.start)}</span><MapPin size={19} aria-hidden="true" /><strong>{zoneNames[dayPlan.origin]}</strong><small>{c.depart}</small></div>
@@ -216,6 +221,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
                     const food = item.kind === "meal" ? foodAreas.find(f => f.zone === item.zone) : null;
                     const isPacked = applied.meal === "picnic" || !food;
                     const entryKey = `${di}-${item.id}`;
+                    const localDiscoveries = discoveryMap[item.id] ?? [];
                     const title = stop?.name ?? (item.kind === "return" ? c.return : isPacked ? `${c.packed} · ${zoneNames[item.zone]}` : food!.name);
                     const meta = stop?.district ?? (item.kind === "return" ? zoneNames[dayPlan.origin] : `${item.id.endsWith("dinner") ? c.dinner : c.lunch} · ${item.end - item.start} ${c.min}`);
                     return <div key={`${item.id}-${i}`} className={`rp-timeline-item rp-${item.kind}`}>
@@ -227,11 +233,12 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
                         <div className="rp-marker">{item.kind === "meal" ? <Utensils size={18} aria-hidden="true" /> : item.kind === "return" ? <MapPin size={18} aria-hidden="true" /> : dayPlan.items.slice(0, i + 1).filter(x => x.kind === "visit").length}</div>
                         <details className="rp-stop-body rp-stop-disclosure" open={!compact || expandedStop === entryKey}>
                           <summary onClick={e => { e.preventDefault(); if (compact) setExpandedStop(expandedStop === entryKey ? null : entryKey); }}>
-                            <span className="rp-district">{meta}</span><strong>{title}</strong><ChevronDown className="rp-stop-chevron" size={17} aria-hidden="true" />
+                            <span className="rp-district">{meta}</span><strong>{title}</strong>{localDiscoveries.length>0 && <span className="rp-discovery-badge">{discoveryBadge(localDiscoveries,locale)}</span>}<ChevronDown className="rp-stop-chevron" size={17} aria-hidden="true" />
                           </summary>
                           <div className="rp-stop-detail">
                             <div className="rp-detail-journey"><span>~{item.leg.km} km · {item.leg.minutes} {c.min}{item.leg.rest > 0 ? ` · ${item.leg.rest} ${c.min} ${c.rest}` : ""}</span>{item.wait > 0 && <span>{item.wait} {c.min} · {c.wait}</span>}<a href={legMapUrl(item.leg.from, item.leg.to, dayPrefs)} target="_blank" rel="noreferrer">{c.routeLink}<ExternalLink size={14} aria-hidden="true" /></a><a href={phoneMapUrl(item.id, dayPrefs, platform)} target={platform === "android" ? undefined : "_blank"} rel="noreferrer">{c.phoneMap}<MapPin size={14} aria-hidden="true" /></a></div>
                             {stop ? <><p>{stop.summary[locale]}</p><p className="rp-stop-note">{c[stop.note]}</p><div className="rp-stop-links"><a href={stop.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a><button type="button" className="rp-no-print" onClick={() => calculate({ ...applied, excluded: [...applied.excluded, stop.id] })} aria-label={`${c.remove}: ${stop.name}`}><Trash2 size={14} aria-hidden="true" />{c.remove}</button></div></> : item.kind === "meal" ? <><p>{applied.meal === "picnic" ? c.picnicNote : !food ? c.packedNote : food[applied.meal][locale]}</p>{!isPacked && <><a className="rp-restaurant-link" target="_blank" rel="noreferrer" href={mapSearch(`${food!.name} restoran`)}>{c.restaurants}<ExternalLink size={15} aria-hidden="true" /></a><p className="rp-stop-note">{c.mealNote}</p><a className="rp-food-source" href={food!.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a></>}</> : null}
+                            <RouteDiscoveries key={entryKey} items={localDiscoveries} locale={locale} area={`${zoneNames[item.zone]}, Eskişehir`}/>
                           </div>
                         </details>
                       </div>

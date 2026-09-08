@@ -50,7 +50,7 @@ export default function DistrictsPage() {
 
       <section className="content-section" id="cografi-isaretler">
         <div className="site-shell grid gap-10 lg:grid-cols-[.72fr_1.28fr]">
-          <div><p className="eyebrow">Coğrafi işaretler</p><h2 className="section-title">Tescil, raftaki etiketten fazlasıdır.</h2><p className="section-copy">Birlik; tescilli ürünleri rota, atölye, yerel sofra, satış noktası ve dijital doğrulamayla ilişkilendirerek bilginin ve gelirin üreticide kalmasını hedefler. Aşağıdaki seçki TÜRKPATENT kayıtlarına doğrudan bağlanır.</p><a className="button-secondary mt-7" href="https://ci.turkpatent.gov.tr/cografi-isaretler/liste?il=26" rel="noreferrer" target="_blank">Eskişehir tam listesini doğrula <ExternalLink aria-hidden="true" size={15} /></a></div>
+          <div><p className="eyebrow">Coğrafi işaretler</p><h2 className="section-title">Tescil, raftaki etiketten fazlasıdır.</h2><p className="section-copy">Birlik; tescilli ürünleri rota, atölye, yerel sofra, satış noktası ve dijital doğrulamayla ilişkilendirerek bilginin ve gelirin üreticide kalmasını hedefler. Aşağıdaki seçki TÜRKPATENT kayıtlarına doğrudan bağlanır.</p><Link className="button-secondary mt-7" href="/lezzet-ve-miras">Lezzet ve miras rehberini keşfet <ArrowRight aria-hidden="true" size={15} /></Link></div>
           <div className="gi-grid">{geographicIndications.map(([name, href], index) => <a href={href} rel="noreferrer" target="_blank" key={name}><span>{String(index + 1).padStart(2, "0")}</span><strong>{name}</strong><ExternalLink aria-hidden="true" size={14} /></a>)}</div>
         </div>
       </section>

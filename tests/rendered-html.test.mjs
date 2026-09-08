@@ -38,6 +38,11 @@ test("renders charter, route and four language portals", async () => {
   const { default: worker } = await import(workerUrl.href);
   const expected = new Map([
     ["/tuzuk", "Tüzük"],
+    ["/lezzet-ve-miras", "15 tescilli ürün"],
+    ["/en/lezzet-ve-miras", "15 registered products"],
+    ["/de/lezzet-ve-miras", "15 geschützte Erzeugnisse"],
+    ["/fr/lezzet-ve-miras", "15 produits enregistrés"],
+    ["/ar/lezzet-ve-miras", "15 منتجًا مسجلًا"],
     ["/rotani-olustur", "alternatif"],
     ["/en", "steering Eskişehir"],
     ["/de", "Tourismuswirtschaft"],

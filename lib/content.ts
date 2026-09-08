@@ -1,3 +1,4 @@
+import { giRegistry } from "./routing/heritage-registry";
 export type District = {
   name: string;
   role: "Çekim" | "Deneyim" | "Bağlantı ve konaklama";
@@ -99,15 +100,4 @@ export const routeFamilies: RouteFamily[] = [
   { id: "buyuk-eskisehir", label: "Büyük Eskişehir: 4 Gün", strapline: "Kent, Frigya, inanç, UNESCO, su ve üretici ekonomisini dört dengeli güne dağıtan ana omurga.", interests: ["heritage", "nature", "craft", "taste", "faith", "city", "rural"], suggestedDays: 4, stopIds: ["odunpazari", "kursunlu", "porsuk", "battalgazi", "yazilikaya", "ulucami", "pessinus", "sakaryabasi", "saricakaya", "sakarilica"], modeFit: ["car"] },
 ];
 
-export const geographicIndications = [
-  ["Eskişehir Lüle Taşı", "https://ci.turkpatent.gov.tr/cografi-isaretler/detay/37890"],
-  ["Eskişehir Met Helvası", "https://ci.turkpatent.gov.tr/cografi-isaretler/detay/38026"],
-  ["Eskişehir Simidi", "https://ci.turkpatent.gov.tr/cografi-isaretler/detay/1482"],
-  ["Eskişehir Çiğböreği", "https://ci.turkpatent.gov.tr/cografi-isaretler/detay/38024"],
-  ["Sorkun Çömleği", "https://ci.turkpatent.gov.tr/cografi-isaretler/detay/1811"],
-  ["Kızılinler Bal Kabağı", "https://ci.turkpatent.gov.tr/cografi-isaretler/detay/12085"],
-  ["Sivrihisar Dövme Sucuğu", "https://ci.turkpatent.gov.tr/cografi-isaretler/detay/163"],
-  ["Sivrihisar Muska Baklavası", "https://ci.turkpatent.gov.tr/cografi-isaretler/detay/38261"],
-  ["Sivrihisar İncili Küpe", "https://ci.turkpatent.gov.tr/cografi-isaretler/detay/442"],
-  ["Sivrihisar Kilimi", "https://ci.turkpatent.gov.tr/cografi-isaretler/detay/4802"],
-] as const;
+export const geographicIndications = giRegistry.map(row => [row.name, row.source] as const);

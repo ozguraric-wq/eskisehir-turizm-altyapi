@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { heritageCopy, heritagePath } from "@/lib/routing/heritage-copy";
 import { siteAsset } from "@/lib/site-path";
 
 const intl = {
@@ -27,7 +28,7 @@ export function SiteFooter() {
           <p className="mt-5 max-w-md text-sm leading-7">{copy.line}</p>
         </div>
         <div><h3>{copy.institution}</h3><div className="footer-links"><Link href={foreign ? `${base}#institution` : "/kurumsal"}>{copy.institution}</Link><Link href={foreign ? `${base}#impact` : "/kurumsal#kalkinma-plani"}>Vizyon Eskişehir 2036</Link><Link href="/tuzuk">{copy.charter}</Link><Link href="/duyurular">Duyurular</Link></div></div>
-        <div><h3>{copy.city}</h3><div className="footer-links"><Link href={foreign ? `${base}#heritage` : "/ilceler"}>{copy.city}</Link><Link href={foreign ? `${base}#routes` : "/rotani-olustur"}>{copy.routes}</Link><Link href={foreign ? `${base}#programmes` : "/projeler"}>{copy.programmes}</Link><a href="https://eskisehir.ktb.gov.tr/TR-111540/ilceler.html" rel="noreferrer" target="_blank">Resmî turizm bilgisi ↗</a></div></div>
+        <div><h3>{copy.city}</h3><div className="footer-links"><Link href={heritagePath(foreign ? locale : "tr")}>{heritageCopy(foreign ? locale : "tr").menu}</Link><Link href={foreign ? `${base}#heritage` : "/ilceler"}>{copy.city}</Link><Link href={foreign ? `${base}#routes` : "/rotani-olustur"}>{copy.routes}</Link><Link href={foreign ? `${base}#programmes` : "/projeler"}>{copy.programmes}</Link><a href="https://eskisehir.ktb.gov.tr/TR-111540/ilceler.html" rel="noreferrer" target="_blank">Resmî turizm bilgisi ↗</a></div></div>
         <div><h3>Bağlantılar</h3><div className="footer-links"><Link href="/iletisim">İletişim</Link><Link href="/kurumsal#seffaflik">Şeffaflık</Link><a href="https://www.eskisehir.gov.tr/" rel="noreferrer" target="_blank">Eskişehir Valiliği ↗</a><a href="https://www.sbb.gov.tr/kalkinma-planlari/" rel="noreferrer" target="_blank">12. Kalkınma Planı ↗</a></div></div>
       </div>
       <div className="site-shell footer-note"><p>{copy.note}</p><p className="mt-2">© 2026 Eskişehir Turizm Altyapı Hizmet Birliği · Erişilebilirlik · KVKK · Bilgi Edinme</p></div>

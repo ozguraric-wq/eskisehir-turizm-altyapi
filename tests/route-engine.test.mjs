@@ -8,9 +8,9 @@ import ts from "typescript";
 
 // Exercise the actual UI engine without a browser or another runtime dependency.
 const directory = await mkdtemp(join(tmpdir(), "etahb-routing-"));
-for (const module of ["types", "data", "engine", "copy", "hospitality", "exports", "transit-data", "transit", "transit-copy"]) {
+for (const module of ["types", "data", "engine", "copy", "hospitality", "exports", "transit-data", "transit", "transit-copy", "heritage-registry", "heritage-data", "heritage-copy", "heritage"]) {
   const source = await readFile(new URL(`../lib/routing/${module}.ts`, import.meta.url), "utf8");
-  const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText.replace(/from "\.\/(types|data|engine|copy|hospitality|exports|transit-data|transit|transit-copy)"/g, 'from "./$1.mjs"');
+  const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText.replace(/from "\.\/(types|data|engine|copy|hospitality|exports|transit-data|transit|transit-copy|heritage-registry|heritage-data|heritage-copy|heritage)"/g, 'from "./$1.mjs"');
   await writeFile(join(directory, `${module}.mjs`), js);
 }
 const { generatePlans, normalizePreferences, schedule, estimateLeg, defaults, encodePreferences, decodePreferences, parseRequest, dateForDay, directions, districtDiscovery, cyclingLimit, preferencesForDay, localTravelMode, timedLeg } = await import(pathToFileURL(join(directory, "engine.mjs")));
@@ -21,7 +21,76 @@ const { departures, findTransitLeg, serviceGroup } = await import(pathToFileURL(
 const { buses } = await import(pathToFileURL(join(directory, "transit-data.mjs")));
 const { transitCopy } = await import(pathToFileURL(join(directory, "transit-copy.mjs")));
 const { hospitality } = await import(pathToFileURL(join(directory, "hospitality.mjs")));
+const { discoveriesForDay, filterDiscoveries, discoveryText } = await import(pathToFileURL(join(directory, "heritage.mjs")));
+const { discoveries, products, heritage } = await import(pathToFileURL(join(directory, "heritage-data.mjs")));
+const { giRegistry } = await import(pathToFileURL(join(directory, "heritage-registry.mjs")));
 after(() => rm(directory, { recursive: true, force: true }));
+
+test("heritage catalogue preserves all verified national GI records and UNESCO distinctions", () => {
+  assert.equal(giRegistry.length,15);
+  assert.deepEqual(products.map(d => d.registration.id).sort((a,b)=>a-b),giRegistry.map(r=>r.id).sort((a,b)=>a-b));
+  assert.equal(new Set(discoveries.map(d=>d.id)).size,discoveries.length);
+  assert.equal(heritage.find(d=>d.id === "sivrihisar-ulu-camii").status,"world");
+  assert.equal(heritage.find(d=>d.id === "daglik-frigya").status,"tentative");
+  assert.equal(heritage.find(d=>d.id === "odunpazari-tarihi-alan").status,"tentative");
+  assert.equal(heritage.find(d=>d.id === "nasreddin-hoca-anlatilari").status,"living");
+  assert.equal(products.find(d=>d.id === "ciborek").scope.tr,"Türkiye");
+  assert.match(products.find(d=>d.id === "kizilinler-bal-kabagi").scope.tr,/Tepebaşı ve Odunpazarı/);
+  for(const d of discoveries)for(const locale of ["tr","en","de","fr","ar"]){
+    assert.ok(d.name[locale] && d.summary[locale] && d.tip[locale],`${d.id}/${locale}`);
+    assert.ok(d.source.startsWith("https://"));
+    for(const id of d.stopIds ?? [])assert.ok(placeById[id],`unknown discovery stop ${id}`);
+  }
+});
+
+test("discovery matching follows actual stops, prevents repeats, and respects vegetarian or picnic meals", () => {
+  const p=normalizePreferences({...defaults,startMode:"district",mode:"walk",origin:"sivri",districts:["Sivrihisar"],date:"2026-09-08",end:1140});
+  const day=schedule(["ulucami","church","saat"],p);assert.ok(day);
+  const before=JSON.stringify(day), contexts=discoveriesForDay(day,p), matches=Object.values(contexts).flat();
+  assert.ok(contexts.ulucami.some(d=>d.id === "sivrihisar-ulu-camii"));
+  assert.ok(matches.some(d=>d.id === "muska-baklavasi"));
+  assert.equal(new Set(matches.map(d=>d.id)).size,matches.length);
+  assert.ok(!matches.some(d=>["sorkun-comlegi","luletasi","ciborek"].includes(d.id)));
+  assert.equal(JSON.stringify(day),before,"advisory content must not mutate the itinerary or timings");
+  const marketDay=schedule(["ulucami","sivricarsi","church"],p);assert.ok(marketDay);
+  const marketContexts=discoveriesForDay(marketDay,p);
+  assert.ok(marketContexts.sivricarsi.some(d=>d.id==="cebe"));
+  assert.ok(!marketContexts.ulucami.some(d=>d.kind==="craft"),"prefer the planned market to the mosque for shopping context");
+  const vegetarian=Object.values(discoveriesForDay(day,{...p,meal:"vegetarian"})).flat();
+  assert.ok(vegetarian.some(d=>d.id === "muska-baklavasi"));
+  for(const id of ["arabasi","kelem-dolmasi","dovme-sucugu"])assert.ok(!vegetarian.some(d=>d.id===id),id);
+  assert.ok(!Object.values(discoveriesForDay(day,{...p,meal:"picnic"})).flat().some(d=>d.kind === "food"));
+  const sorkun=schedule(["sorkun"],{...defaults,origin:"sorkun",mode:"walk",startMode:"district"});assert.ok(sorkun);
+  assert.ok(discoveriesForDay(sorkun,defaults).sorkun.some(d=>d.id==="sorkun-comlegi"));
+  const gurleyik=schedule(["gurleyik"],{...defaults,origin:"gurleyik",mode:"walk",startMode:"district"});assert.ok(gurleyik);
+  assert.ok(!Object.values(discoveriesForDay(gurleyik,defaults)).flat().some(d=>d.id==="sorkun-comlegi"),"sharing a district does not mean visiting Sorkun");
+  const midas=schedule(["midas"],{...defaults,end:1140});assert.ok(midas);
+  assert.equal(discoveriesForDay(midas,defaults).midas[0].status,"tentative");
+  assert.ok(!Object.values(discoveriesForDay(midas,defaults)).flat().some(d=>d.kind!=="heritage"));
+});
+
+test("heritage search handles Turkish spellings, translated descriptions, category and area together", () => {
+  assert.equal(filterDiscoveries("all","","CIGBOREGI","tr")[0].id,"ciborek");
+  assert.equal(filterDiscoveries("craft","Mihalıççık","sorkun","en")[0].id,"sorkun-comlegi");
+  assert.equal(filterDiscoveries("heritage","","Phrygia","en")[0].id,"daglik-frigya");
+  assert.equal(filterDiscoveries("taste","Sivrihisar","lahana","tr")[0].id,"kelem-dolmasi");
+  assert.equal(filterDiscoveries("taste","Sivrihisar","çömlek","tr").length,0);
+  assert.equal(filterDiscoveries("craft","","","tr").length,7);
+});
+
+test("portable route notes retain discoveries without adding calendar events or navigation stops", () => {
+  const p=normalizePreferences({...defaults,mode:"walk",startMode:"district",origin:"sivri",districts:["Sivrihisar"],date:"2026-09-08",end:1140});
+  const day=schedule(["ulucami","church","saat"],p);assert.ok(day);
+  const plan={id:"heritage-export",days:[day],score:1,covered:["heritage"]};
+  for(const locale of ["tr","en","de","fr","ar"]){
+    const ics=calendarFile(plan,p,locale).replace(/\r\n /g,"");
+    assert.match(ics,/whc.unesco.org/);assert.match(ics,/Sivrihisar Muska Baklavası/);
+    assert.equal((ics.match(/BEGIN:VEVENT/g)||[]).length,day.items.filter(i=>i.kind!=="return" && i.end>i.start).length);
+    const html=printDocumentHtml(plan,p,locale,"https://example.com/logo.webp");
+    assert.match(html,/discovery-print/);assert.match(html,/Sivrihisar Muska Baklavası/);
+    assert.ok(discoveryText(discoveriesForDay(day,p).ulucami,locale,true).length>50);
+  }
+});
 
 test("regression: heritage alternatives escape the two central districts", () => {
   const result = generatePlans({ ...defaults, interests: ["heritage"], days: 1, alternatives: 3 });

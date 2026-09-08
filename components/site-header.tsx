@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, Globe2, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { siteAsset } from "@/lib/site-path";
+import { heritageCopy, heritagePath } from "@/lib/routing/heritage-copy";
 
 const languages = [
   ["tr", "Türkçe", "/"],
@@ -40,7 +41,6 @@ const trGroups = [
     items: [
       ["14 İlçe", "/ilceler", "Her ilçeye özgü turizm rolü"],
       ["Tarih ve Frigya", "/ilceler#miras", "Yazılıkaya'dan UNESCO Sivrihisar'a"],
-      ["Coğrafi İşaretler", "/ilceler#cografi-isaretler", "Tescilli lezzet ve zanaatlar"],
       ["Resmî Kaynaklar", "/ilceler#kaynaklar", "Ziyaret öncesi doğrulama bağlantıları"],
     ],
   },
@@ -57,6 +57,12 @@ export function SiteHeader() {
   const locale = localeFrom(pathname);
   const copy = labels[locale];
   const base = locale === "tr" ? "" : `/${locale}`;
+  const discoveryLabel = heritageCopy(locale).menu;
+  const languageHref = (code: typeof locale, fallback: string) => {
+    if (pathname.includes("/lezzet-ve-miras")) return heritagePath(code);
+    if (pathname.includes("/rotani-olustur")) return `${code === "tr" ? "" : `/${code}`}/rotani-olustur`;
+    return fallback;
+  };
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -73,6 +79,7 @@ export function SiteHeader() {
   const internationalLinks = [
     [copy.union, `${base}#institution`],
     [copy.city, `${base}#heritage`],
+    [discoveryLabel, heritagePath(locale)],
     [copy.routes, `${base}/rotani-olustur`],
     [copy.programs, `${base}#programmes`],
     [copy.charter, "/tuzuk"],
@@ -111,6 +118,7 @@ export function SiteHeader() {
                     </div>
                   </div>
                 ))}
+                <Link className={`nav-link ${pathname.startsWith("/lezzet-ve-miras") ? "active" : ""}`} href="/lezzet-ve-miras">{discoveryLabel}</Link>
                 <Link className={`nav-link ${pathname === "/rotani-olustur" ? "active" : ""}`} href="/rotani-olustur">Rotalar</Link>
                 <Link className={`nav-link ${pathname === "/projeler" ? "active" : ""}`} href="/projeler">Programlar</Link>
                 <Link className={`nav-link ${pathname === "/tuzuk" ? "active" : ""}`} href="/tuzuk">Tüzük</Link>
@@ -123,7 +131,7 @@ export function SiteHeader() {
               </button>
               <div className="nav-dropdown language-dropdown">
                 {languages.map(([code, title, href]) => (
-                  <Link className={locale === code ? "language-active" : ""} href={pathname.includes("/rotani-olustur") ? code === "tr" ? "/rotani-olustur" : `/${code}/rotani-olustur` : href} hrefLang={code} key={code}>
+                  <Link className={locale === code ? "language-active" : ""} href={languageHref(code,href)} hrefLang={code} key={code}>
                     <strong>{title}</strong><span>{code.toUpperCase()}</span>
                   </Link>
                 ))}
@@ -146,12 +154,12 @@ export function SiteHeader() {
                     <div className="mobile-subnav"><Link href={group.href}>Genel Bakış</Link>{group.items.map(([title, href]) => <Link href={href} key={title}>{title}</Link>)}</div>
                   </details>
                 ))}
-                <Link href="/rotani-olustur">Rotalar</Link><Link href="/projeler">Programlar</Link><Link href="/tuzuk">Tüzük</Link>
+                <Link href="/lezzet-ve-miras">{discoveryLabel}</Link><Link href="/rotani-olustur">Rotalar</Link><Link href="/projeler">Programlar</Link><Link href="/tuzuk">Tüzük</Link>
                 <div className="mobile-utility"><Link href="/duyurular">Duyurular</Link><Link href="/iletisim">İletişim</Link></div>
               </>
             ) : internationalLinks.map(([title, href]) => <Link href={href} key={title}>{title}</Link>)}
             <div className="mobile-languages" aria-label="Dil seçimi">
-              {languages.map(([code, title, href]) => <Link className={locale === code ? "active" : ""} href={pathname.includes("/rotani-olustur") ? code === "tr" ? "/rotani-olustur" : `/${code}/rotani-olustur` : href} hrefLang={code} key={code}>{title}</Link>)}
+              {languages.map(([code, title, href]) => <Link className={locale === code ? "active" : ""} href={languageHref(code,href)} hrefLang={code} key={code}>{title}</Link>)}
             </div>
           </nav>
         </div>
