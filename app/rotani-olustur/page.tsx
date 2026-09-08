@@ -6,7 +6,7 @@ import { siteAsset } from "@/lib/site-path";
 
 export const metadata: Metadata = {
   title: "Akıllı Rota · Eskişehir Keşif Asistanı",
-  description: "36 keşif teması, yemek molaları ve beş ulaşım seçeneğiyle Eskişehir gezinizi planlayın. Sürenize göre birden çok alternatif oluşturun, düzenleyin ve kaydedin.",
+  description: "43 keşif teması, yemek molaları ve beş ulaşım seçeneğiyle Eskişehir gezinizi planlayın. Sürenize göre birden çok alternatif oluşturun, düzenleyin ve kaydedin.",
 };
 export default function RoutePage() {
   return <main id="ana-icerik" className="rp-page">

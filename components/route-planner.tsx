@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Bike, Bookmark, Check, ChevronDown, Clock3, Compass, Download, ExternalLink, Footprints, MapPin, Navigation, Printer, Route, Share2, SlidersHorizontal, Sparkles, TrainFront, Trash2, Utensils, Car, Motorbike as Motorcycle } from "lucide-react";
-import { CATALOG_VERSION, foodAreas, origins, placeById, places, sources, themeById, themes, urbanZones, zoneNames } from "@/lib/routing/data";
-import { clock, decodePreferences, defaults, directions, encodePreferences, generatePlans, mapSearch, normalizePreferences, parseRequest, zoneOf } from "@/lib/routing/engine";
+import { ArrowRight, Bike, Bookmark, CalendarPlus, Check, ChevronDown, Clock3, Compass, Download, ExternalLink, Footprints, MapPin, Navigation, Printer, Route, Share2, SlidersHorizontal, Sparkles, TrainFront, Trash2, Utensils, Car, Motorbike as Motorcycle } from "lucide-react";
+import { CATALOG_VERSION, districtNames, foodAreas, origins, placeById, places, sources, themeById, themes, urbanZones, zoneNames } from "@/lib/routing/data";
+import { clock, decodePreferences, defaults, encodePreferences, generatePlans, mapSearch, normalizePreferences, parseRequest } from "@/lib/routing/engine";
+import { siteAsset } from "@/lib/site-path";
+import { RouteHospitality } from "./route-hospitality";
+import { calendarFile, legMapUrl, navigationSegments, phoneMapUrl, printDocumentHtml } from "@/lib/routing/exports";
 import { copyFor } from "@/lib/routing/copy";
 import type { Interest, Locale, Mode, Plan, Preferences } from "@/lib/routing/types";
 
 const transport: { id: Mode; icon: typeof Car }[] = [{ id: "walk", icon: Footprints }, { id: "transit", icon: TrainFront }, { id: "car", icon: Car }, { id: "bicycle", icon: Bike }, { id: "motorcycle", icon: Motorcycle }];
-const interestKeys: Interest[] = ["heritage", "nature", "craft", "taste", "faith", "city"];
+const interestKeys: Interest[] = ["heritage", "phrygia", "nature", "craft", "taste", "faith", "city"];
 const STORAGE_KEY = "etahb-discovery-plans-v2";
 type SavedPlan = { id: string; title: string; p: Preferences; planId: string; version: string };
 
@@ -27,6 +30,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
   const [compact, setCompact] = useState(true);
   const [expandedStop, setExpandedStop] = useState<string | null>(null);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [platform, setPlatform] = useState<"android" | "ios" | "other">("other");
   const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
   const [shareFallback, setShareFallback] = useState("");
   const resultRef = useRef<HTMLElement>(null);
@@ -38,6 +42,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
   const fmtDuration = (minutes: number) => `${Math.floor(minutes / 60)} ${c.hour}${minutes % 60 ? ` ${minutes % 60} ${c.min}` : ""}`;
 
   useEffect(() => {
+    setPlatform(/android/i.test(navigator.userAgent) ? "android" : /iphone|ipad|ipod/i.test(navigator.userAgent) || navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1 ? "ios" : "other");
     const media = window.matchMedia("(max-width: 760px)");
     const sync = () => setCompact(media.matches);
     sync(); media.addEventListener("change", sync);
@@ -47,7 +52,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
   useEffect(() => {
     try {
       const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
-      if (Array.isArray(parsed)) setSavedPlans(parsed.filter(item => item && item.version === CATALOG_VERSION && typeof item.id === "string" && typeof item.title === "string" && typeof item.planId === "string").slice(0, 8).map(item => ({ ...item, p: normalizePreferences(item.p) })));
+      if (Array.isArray(parsed)) setSavedPlans(parsed.filter(item => item && [CATALOG_VERSION, "2026-09-08.1"].includes(item.version) && typeof item.id === "string" && typeof item.title === "string" && typeof item.planId === "string").slice(0, 8).map(item => ({ ...item, p: normalizePreferences(item.p) })));
     } catch { /* An unavailable local store must never prevent route planning. */ }
     const hash = window.location.hash;
     const encoded = hash.match(/(?:^#|&)route=([^&]+)/)?.[1];
@@ -61,7 +66,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
     }
   }, []);
 
-  function change<K extends keyof Preferences>(key: K, value: Preferences[K]) { setDraft(p => normalizePreferences({ ...p, [key]: value })); setNotice(""); }
+  function change<K extends keyof Preferences>(key: K, value: Preferences[K]) { setDraft(p => normalizePreferences({ ...p, [key]: value, ...(["interests", "districts"].includes(key) ? { focus: "" } : {}) })); setNotice(""); }
   function goToStep(next: number) {
     setStep(next); setEditing(true);
     requestAnimationFrame(() => preferencesRef.current?.querySelector<HTMLElement>(`[data-step="${next}"]`)?.focus({ preventScroll: false }));
@@ -74,7 +79,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
   function useTheme(id: string) {
     const theme = themeById[id];
     const isLong = ["localweekend", "heritageweekend", "discovery", "archaeology", "twobazaars"].includes(id);
-    calculate({ ...draft, focus: id, interests: theme.interests, days: isLong ? 2 : 1, mode: ["pedal", "parkpedal"].includes(id) ? "bicycle" : draft.mode }, undefined, true);
+    calculate({ ...draft, focus: id, districts: [], interests: theme.interests, days: isLong ? 2 : 1, mode: ["pedal", "parkpedal"].includes(id) ? "bicycle" : draft.mode }, undefined, true);
   }
   function interpret() {
     const next = parseRequest(request, draft); setDraft(next.preferences); setNotice(next.changed.length ? c.understood : c.notUnderstood); setStep(0); setEditing(true);
@@ -95,11 +100,29 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
     try { await navigator.clipboard.writeText(url.href); setNotice(c.copied); setShareFallback(""); } catch { setNotice(c.copyFailed); setShareFallback(url.href); }
   }
   function printPlan() {
-    const nodes = [...document.querySelectorAll<HTMLDetailsElement>(".rp-stop-disclosure")];
-    const previous = nodes.map(node => node.open);
-    nodes.forEach(node => { node.open = true; });
-    window.addEventListener("afterprint", () => nodes.forEach((node, i) => { node.open = previous[i]; }), { once: true });
-    window.print();
+    if (!current) return;
+    const frame = document.createElement("iframe");
+    frame.title = c.itinerary;
+    frame.style.cssText = "position:fixed;inset:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none";
+    frame.setAttribute("aria-hidden", "true");
+    frame.onload = async () => {
+      const win = frame.contentWindow, doc = frame.contentDocument;
+      if (!win || !doc) { frame.remove(); return; }
+      await doc.fonts.ready;
+      await Promise.all(Array.from(doc.images).map(img => img.decode().catch(() => undefined)));
+      win.addEventListener("afterprint", () => frame.remove(), { once: true });
+      win.focus(); win.print();
+      window.setTimeout(() => frame.remove(), 60000);
+    };
+    frame.srcdoc = printDocumentHtml(current, applied, locale, new URL(siteAsset("/brand/logo-mark.webp"), window.location.origin).href);
+    document.body.appendChild(frame);
+  }
+  function exportCalendar() {
+    if (!current) return;
+    if (!applied.date) { goToStep(0); setNotice(c.calendarDate); return; }
+    const url = URL.createObjectURL(new Blob([calendarFile(current, applied, locale)], { type: "text/calendar;charset=utf-8" }));
+    const link = document.createElement("a"); link.href = url; link.download = `eskisehir-${applied.date}.ics`; document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000); setNotice(c.calendarNote);
   }
   function download() {
     if (!current) return;
@@ -128,7 +151,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
       </details>
       <div className="rp-workspace">
         <aside className="rp-sidebar rp-no-print">
-          {!editing && <div className="rp-preference-summary"><span className="rp-summary-label"><Check size={17} aria-hidden="true" />{c.selectionSummary}</span><h2>{draft.days} {c.day} · {c[draft.mode]}</h2><p>{draft.interests.map(i => c[i]).join(" · ")}</p><p>{clock(draft.start)}–{clock(draft.end)} · {c[draft.meal]}</p><button type="button" className="rp-edit-preferences" onClick={() => goToStep(0)}><SlidersHorizontal size={18} aria-hidden="true" />{c.editPreferences}</button></div>}
+          {!editing && <div className="rp-preference-summary"><span className="rp-summary-label"><Check size={17} aria-hidden="true" />{c.selectionSummary}</span><h2>{draft.days} {c.day} · {c[draft.mode]}</h2><p>{draft.interests.map(i => c[i]).join(" · ")}</p><p>{clock(draft.start)}–{clock(draft.end)} · {c[draft.meal]}{draft.date ? ` · ${draft.date}` : ""}</p><p>{draft.districts.length ? draft.districts.join(" · ") : c.allDistricts}</p><button type="button" className="rp-edit-preferences" onClick={() => goToStep(0)}><SlidersHorizontal size={18} aria-hidden="true" />{c.editPreferences}</button></div>}
           <form ref={preferencesRef} hidden={!editing} className="rp-filters rp-guided-preferences" id={`route-filters-${locale}`} aria-labelledby={`preferences-title-${locale}`} onSubmit={e => { e.preventDefault(); if (step < 2) goToStep(step + 1); else calculate(draft, undefined, true); }}>
             <header className="rp-preference-heading"><span><SlidersHorizontal size={20} aria-hidden="true" /></span><div><h2 id={`preferences-title-${locale}`}>{c.preferences}</h2><p>{c.preferencesIntro}</p></div></header>
             <ol className="rp-step-nav" aria-label={c.preferences}>{[c.stepTime, c.stepDiscover, c.stepPersonal].map((label, i) => <li key={label}><button type="button" className={step === i ? "selected" : ""} aria-current={step === i ? "step" : undefined} onClick={() => goToStep(i)}><span>{i + 1}</span>{label}</button></li>)}</ol>
@@ -141,6 +164,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
             <fieldset className="rp-step-pane" hidden={step !== 1} data-step="1" tabIndex={-1}><legend className="sr-only">2. {c.stepDiscover}</legend>
               <fieldset className="rp-transport"><legend>{c.transport}</legend><div>{transport.map(({ id, icon: Icon }) => <button key={id} className={draft.mode === id ? "selected" : ""} aria-pressed={draft.mode === id} onClick={() => change("mode", id)} type="button"><Icon size={21} aria-hidden="true" /><span>{c[id]}</span>{draft.mode === id && <Check size={15} aria-hidden="true" />}</button>)}</div></fieldset>
               <fieldset><legend>{c.interests}</legend><p className="rp-field-help">{c.multiSelect}</p><div className="rp-interest-list">{interestKeys.map(i => <button type="button" key={i} aria-pressed={draft.interests.includes(i)} className={draft.interests.includes(i) ? "selected" : ""} onClick={() => change("interests", draft.interests.includes(i) ? draft.interests.length > 1 ? draft.interests.filter(x => x !== i) : draft.interests : [...draft.interests, i])}><span className="rp-check">{draft.interests.includes(i) && <Check size={13} aria-hidden="true" />}</span>{c[i]}</button>)}</div></fieldset>
+              <fieldset className="rp-district-picker"><legend>{c.districts}</legend><p className="rp-field-help">{c.districtHelp}</p><details><summary>{draft.districts.length ? draft.districts.join(" · ") : `${c.allDistricts} (14)`}<ChevronDown size={17} aria-hidden="true" /></summary><div className="rp-toggle-list">{districtNames.map(d => <label key={d}><input type="checkbox" checked={draft.districts.includes(d)} onChange={() => change("districts", draft.districts.includes(d) ? draft.districts.filter(x => x !== d) : [...draft.districts, d])} /><span>{d}</span></label>)}</div>{draft.districts.length > 0 && <button type="button" className="rp-text-button" onClick={() => change("districts", [])}>{c.allDistricts}</button>}</details></fieldset>
             </fieldset>
             <fieldset className="rp-step-pane" hidden={step !== 2} data-step="2" tabIndex={-1}><legend className="sr-only">3. {c.stepPersonal}</legend>
               <fieldset><legend>{c.pace}</legend><div className="rp-segment">{(["relaxed", "balanced", "full"] as const).map(i => <button key={i} type="button" className={draft.pace === i ? "selected" : ""} aria-pressed={draft.pace === i} onClick={() => change("pace", i)}>{c[i]}</button>)}</div></fieldset>
@@ -165,15 +189,15 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
           {shareFallback && <label className="rp-share-fallback">{c.share}<input readOnly value={shareFallback} onFocus={e => e.target.select()} /></label>}
           {dirty && <div className="rp-dirty rp-no-print"><span>{c.dirty}</span><button type="button" onClick={() => calculate(draft)}>{c.update}<ArrowRight size={16} aria-hidden="true" /></button></div>}
           {result.plans.length > 0 && result.plans.length < applied.alternatives && <p className="rp-small-note">{c.fewer}</p>}
-          {result.plans.length === 0 ? <div className="rp-empty"><Compass size={40} aria-hidden="true" /><h3>{c.empty}</h3><p>{c.emptyHint}</p><button type="button" className="rp-primary" onClick={() => calculate(defaults)}>{c.reset}</button></div> : <>
+          {result.plans.length === 0 ? <div className="rp-empty"><Compass size={40} aria-hidden="true" /><h3>{c.empty}</h3><p>{c.emptyHint}</p>{result.unavailableDistricts.length > 0 && <p>{c.unavailableDistricts}: <strong>{result.unavailableDistricts.join(" · ")}</strong></p>}<button type="button" className="rp-edit-preferences" onClick={() => goToStep(1)}>{c.editPreferences}</button><button type="button" className="rp-primary" onClick={() => calculate(defaults)}>{c.reset}</button></div> : <>
             <div className="rp-alternatives rp-no-print" role="group" aria-label={c.alternatives}>{result.plans.map((plan, i) => <button key={plan.id} type="button" aria-pressed={active === i} className={active === i ? "selected" : ""} onClick={() => { setActive(i); setDayIndex(0); setExpandedStop(null); setNotice(""); }}><span>{c.option} {String(i + 1).padStart(2, "0")}{active === i && <Check size={17} aria-hidden="true" />}</span><strong>{[...new Set(plan.days.flatMap(d => d.placeIds.map(id => placeById[id].district)))].join(" · ")}</strong><small>{plan.days.reduce((n, d) => n + d.placeIds.length, 0)} {c.stops} · ~{Math.round(plan.days.reduce((n, d) => n + d.km, 0))} km</small></button>)}</div>
             {current && day && <article className="rp-plan">
               <header className="rp-plan-header"><div><span>{current.days.length} {c.day} · {c[applied.mode]}</span><h3>{planName(current)}</h3><p>{current.covered.map(i => c[i]).join(" · ")}</p></div><Compass className="rp-plan-compass" size={74} strokeWidth={1} aria-hidden="true" /></header>
-              <details className="rp-action-menu rp-no-print" open={!compact || actionsOpen}><summary onClick={e => { e.preventDefault(); setActionsOpen(!actionsOpen); }}>{c.planActions}<ChevronDown size={17} aria-hidden="true" /></summary><div className="rp-actions"><button type="button" onClick={save}><Bookmark size={17} aria-hidden="true" />{c.save}</button><button type="button" onClick={share}><Share2 size={17} aria-hidden="true" />{c.share}</button><button type="button" onClick={download}><Download size={17} aria-hidden="true" />{c.download}</button><button type="button" onClick={printPlan}><Printer size={17} aria-hidden="true" />{c.print}</button></div></details>
+              <details className="rp-action-menu rp-no-print" open={!compact || actionsOpen}><summary onClick={e => { e.preventDefault(); setActionsOpen(!actionsOpen); }}>{c.planActions}<ChevronDown size={17} aria-hidden="true" /></summary><div className="rp-actions"><button type="button" onClick={save}><Bookmark size={17} aria-hidden="true" />{c.save}</button><button type="button" onClick={share}><Share2 size={17} aria-hidden="true" />{c.share}</button><button type="button" onClick={download}><Download size={17} aria-hidden="true" />{c.download}</button><button type="button" onClick={exportCalendar}><CalendarPlus size={17} aria-hidden="true" />{c.calendar}</button><button type="button" onClick={printPlan}><Printer size={17} aria-hidden="true" />{c.print}</button></div><p className="rp-calendar-help">{applied.date ? c.calendarNote : c.calendarDate}{!applied.date && <button type="button" onClick={() => goToStep(0)}>{c.chooseDate} →</button>}</p></details>
               <div className="rp-day-tabs rp-no-print" role="group" aria-label={c.days}>{current.days.map((d, i) => <button type="button" aria-pressed={dayIndex === i} className={dayIndex === i ? "selected" : ""} key={i} onClick={() => { setDayIndex(i); setExpandedStop(null); }}>{c.day} {i + 1}{d.date && <small>{d.date}</small>}</button>)}</div>
               {current.days.map((dayPlan, di) => <div key={di} className={`rp-day-content ${di === dayIndex ? "is-active" : ""}`}>
                 <div className="rp-print-day">{c.day} {di + 1} {dayPlan.date}</div>
-                <div className="rp-metrics"><div><Navigation size={19} aria-hidden="true" /><strong>~{Math.round(dayPlan.km)} km</strong><span>{c.distance}</span></div><div><Clock3 size={19} aria-hidden="true" /><strong>{fmtDuration(dayPlan.travel)}</strong><span>{c.duration}</span></div><div><Footprints size={19} aria-hidden="true" /><strong>~{dayPlan.walking} km</strong><span>{c.walking}</span></div></div>
+                <details className="rp-navigation rp-no-print"><summary><Navigation size={18} aria-hidden="true" />{c.navigation}<ChevronDown size={17} aria-hidden="true" /></summary><div><p>{c.navigationNote}</p>{navigationSegments(dayPlan, applied).map((part, index, parts) => <a key={index} href={part.url} target="_blank" rel="noreferrer">{parts.length > 1 ? `${c.navigationPart} ${index + 1} / ${parts.length}` : c.navigation}<ExternalLink size={15} aria-hidden="true" /></a>)}</div></details><div className="rp-metrics"><div><Navigation size={19} aria-hidden="true" /><strong>~{Math.round(dayPlan.km)} km</strong><span>{c.distance}</span></div><div><Clock3 size={19} aria-hidden="true" /><strong>{fmtDuration(dayPlan.travel)}</strong><span>{c.duration}</span></div><div><Footprints size={19} aria-hidden="true" /><strong>~{dayPlan.walking} km</strong><span>{c.walking}</span></div></div>
                 <div className="rp-timeline"><h4>{c.timing}</h4><p className="rp-expand-hint">{c.tapDetails}</p><div className="rp-origin"><span>{clock(applied.start)}</span><MapPin size={19} aria-hidden="true" /><strong>{zoneNames[applied.origin]}</strong><small>{c.depart}</small></div>
                   {dayPlan.items.map((item, i) => {
                     const stop = item.kind === "visit" ? placeById[item.id] : null;
@@ -183,7 +207,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
                     const title = stop?.name ?? (item.kind === "return" ? c.return : isPacked ? `${c.packed} · ${zoneNames[item.zone]}` : food!.name);
                     const meta = stop?.district ?? (item.kind === "return" ? zoneNames[applied.origin] : `${item.id.endsWith("dinner") ? c.dinner : c.lunch} · ${item.end - item.start} ${c.min}`);
                     return <div key={`${item.id}-${i}`} className={`rp-timeline-item rp-${item.kind}`}>
-                      <div className="rp-leg"><span>~{item.leg.km} km · {item.leg.minutes} {c.min}{item.leg.rest > 0 ? ` · ${item.leg.rest} ${c.min} ${c.rest}` : ""}</span>{item.leg.km > 0 && <a href={directions(item.leg.from, item.leg.to, applied.mode)} target="_blank" rel="noreferrer" aria-label={c.routeLink} title={c.routeLink}><ExternalLink size={15} aria-hidden="true" /></a>}</div>
+                      <div className="rp-leg"><span>~{item.leg.km} km · {item.leg.minutes} {c.min}{item.leg.rest > 0 ? ` · ${item.leg.rest} ${c.min} ${c.rest}` : ""}</span>{item.leg.km > 0 && <a href={legMapUrl(item.leg.from, item.leg.to, applied)} target="_blank" rel="noreferrer" aria-label={c.routeLink} title={c.routeLink}><ExternalLink size={15} aria-hidden="true" /></a>}</div>
                       {item.wait > 0 && <p className="rp-wait">{item.wait} {c.min} · {c.wait}</p>}
                       <div className="rp-timeline-content">
                         <div className="rp-time"><time>{clock(item.start)}</time>{item.kind !== "return" && <span>{clock(item.end)}</span>}</div>
@@ -193,7 +217,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
                             <span className="rp-district">{meta}</span><strong>{title}</strong><ChevronDown className="rp-stop-chevron" size={17} aria-hidden="true" />
                           </summary>
                           <div className="rp-stop-detail">
-                            <div className="rp-detail-journey"><span>~{item.leg.km} km · {item.leg.minutes} {c.min}{item.leg.rest > 0 ? ` · ${item.leg.rest} ${c.min} ${c.rest}` : ""}</span>{item.wait > 0 && <span>{item.wait} {c.min} · {c.wait}</span>}<a href={directions(item.leg.from, item.leg.to, applied.mode)} target="_blank" rel="noreferrer">{c.routeLink}<ExternalLink size={14} aria-hidden="true" /></a></div>
+                            <div className="rp-detail-journey"><span>~{item.leg.km} km · {item.leg.minutes} {c.min}{item.leg.rest > 0 ? ` · ${item.leg.rest} ${c.min} ${c.rest}` : ""}</span>{item.wait > 0 && <span>{item.wait} {c.min} · {c.wait}</span>}<a href={legMapUrl(item.leg.from, item.leg.to, applied)} target="_blank" rel="noreferrer">{c.routeLink}<ExternalLink size={14} aria-hidden="true" /></a><a href={phoneMapUrl(item.id, applied, platform)} target={platform === "android" ? undefined : "_blank"} rel="noreferrer">{c.phoneMap}<MapPin size={14} aria-hidden="true" /></a></div>
                             {stop ? <><p>{stop.summary[locale]}</p><p className="rp-stop-note">{c[stop.note]}</p><div className="rp-stop-links"><a href={stop.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a><button type="button" className="rp-no-print" onClick={() => calculate({ ...applied, excluded: [...applied.excluded, stop.id] })} aria-label={`${c.remove}: ${stop.name}`}><Trash2 size={14} aria-hidden="true" />{c.remove}</button></div></> : item.kind === "meal" ? <><p>{applied.meal === "picnic" ? c.picnicNote : !food ? c.packedNote : food[applied.meal][locale]}</p>{!isPacked && <><a className="rp-restaurant-link" target="_blank" rel="noreferrer" href={mapSearch(`${food!.name} restoran`)}>{c.restaurants}<ExternalLink size={15} aria-hidden="true" /></a><p className="rp-stop-note">{c.mealNote}</p><a className="rp-food-source" href={food!.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a></>}</> : null}
                           </div>
                         </details>
@@ -202,7 +226,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
                   })}
                 </div>
               </div>)}
-              <p className="rp-print-note">{c.modelNote}</p>
+              <RouteHospitality key={current.id} districts={[...new Set(current.days.flatMap(d => d.placeIds.map(id => placeById[id].district)))]} locale={locale} /><p className="rp-print-note">{c.modelNote}</p>
               <div className="rp-explanation"><h4><Check size={19} aria-hidden="true" />{c.why}</h4><p>{c.reason}</p></div>
             </article>}
           </>}

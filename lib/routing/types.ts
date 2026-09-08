@@ -2,14 +2,15 @@ export type Locale = "tr" | "en" | "de" | "fr" | "ar";
 export type Localized = Record<Locale, string>;
 export const text = (tr: string, en: string, de: string, fr: string, ar: string): Localized => ({ tr, en, de, fr, ar });
 export type Mode = "walk" | "transit" | "car" | "bicycle" | "motorcycle";
-export type Interest = "heritage" | "nature" | "craft" | "taste" | "faith" | "city";
-export type Zone = "center" | "oldtown" | "sazova" | "kentpark" | "river" | "seyit" | "doganli" | "midas" | "han" | "sivri" | "cifteler" | "yunus" | "gurleyik" | "inonu";
+export type Interest = "heritage" | "phrygia" | "nature" | "craft" | "taste" | "faith" | "city";
+export type District = "Alpu" | "Beylikova" | "Çifteler" | "Günyüzü" | "Han" | "İnönü" | "Mahmudiye" | "Mihalgazi" | "Mihalıççık" | "Odunpazarı" | "Sarıcakaya" | "Seyitgazi" | "Sivrihisar" | "Tepebaşı";
+export type Zone = "center" | "oldtown" | "sazova" | "kentpark" | "river" | "seyit" | "doganli" | "midas" | "han" | "sivri" | "cifteler" | "yunus" | "gurleyik" | "inonu" | "alpu" | "beylikova" | "gunyuzu" | "kayakent" | "mahmudiye" | "mihalgazi" | "ilica" | "saricakaya" | "mayislar" | "kumbet" | "pessinus" | "sorkun" | "mihaliccik";
 export type Pace = "relaxed" | "balanced" | "full";
 export type MealStyle = "local" | "vegetarian" | "picnic";
 export type Weather = "outdoors" | "indoors";
 export type VisitNote = "hours" | "worship" | "uneven" | "water" | "pedestrian";
 export interface Place {
-  id: string; name: string; zone: Zone; district: string;
+  id: string; name: string; zone: Zone; district: District;
   summary: Localized; interests: Interest[]; minutes: number; walking: number;
   indoor: boolean; family: boolean; lowWalk: boolean; paid: boolean;
   note: VisitNote; source: string; status: "existing";
@@ -24,7 +25,7 @@ export interface Preferences {
   days: number; start: number; end: number; mode: Mode; pace: Pace;
   interests: Interest[]; origin: Zone; meal: MealStyle; family: boolean;
   lowWalk: boolean; weather: Weather; freeOnly: boolean; date: string;
-  excluded: string[]; focus: string; alternatives: number;
+  excluded: string[]; focus: string; alternatives: number; districts: District[];
 }
 export interface Leg { from: string; to: string; km: number; minutes: number; rest: number; }
 export interface ScheduleItem {
@@ -36,4 +37,5 @@ export interface DayPlan {
   km: number; travel: number; walking: number; finish: number; score: number;
 }
 export interface Plan { id: string; days: DayPlan[]; score: number; covered: Interest[]; }
-export interface PlanningResult { plans: Plan[]; eligible: number; evaluated: number; requestedDays: number; }
+export interface PlanningResult { plans: Plan[]; eligible: number; evaluated: number; requestedDays: number; unavailableDistricts: District[]; }
+export interface Hospitality { id: string; name: string; district: District; kind: "hotel" | "restaurant"; category: string; certificate: string; certificateType: string; }

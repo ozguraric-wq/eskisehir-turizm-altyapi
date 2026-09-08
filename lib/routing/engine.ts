@@ -1,9 +1,9 @@
-import { foodAreas, origins, placeById, places, roadEdges, themeById, themes, urbanZones, zoneNames, CATALOG_VERSION } from "./data";
+import { districtNames, foodAreas, origins, placeById, places, roadEdges, themeById, themes, urbanZones, zoneNames, CATALOG_VERSION } from "./data";
 import type { DayPlan, Interest, Leg, Mode, Plan, PlanningResult, Preferences, ScheduleItem, Zone } from "./types";
 
-export const defaults: Preferences = { days: 2, start: 540, end: 1080, mode: "car", pace: "balanced", interests: ["heritage", "taste"], origin: "center", meal: "local", family: false, lowWalk: false, weather: "outdoors", freeOnly: false, date: "", excluded: [], focus: "", alternatives: 3 };
+export const defaults: Preferences = { days: 2, start: 540, end: 1080, mode: "car", pace: "balanced", interests: ["heritage", "taste"], origin: "center", meal: "local", family: false, lowWalk: false, weather: "outdoors", freeOnly: false, date: "", excluded: [], focus: "", alternatives: 3, districts: [] };
 const modes: Mode[] = ["walk", "transit", "car", "bicycle", "motorcycle"];
-const interestKeys: Interest[] = ["heritage", "nature", "craft", "taste", "faith", "city"];
+const interestKeys: Interest[] = ["heritage", "phrygia", "nature", "craft", "taste", "faith", "city"];
 const zones = Object.keys(zoneNames) as Zone[];
 const matrix = Object.fromEntries(zones.map(a => [a, Object.fromEntries(zones.map(b => [b, a === b ? 0 : Infinity]))])) as Record<Zone, Record<Zone, number>>;
 for (const [a, b, km] of roadEdges) matrix[a][b] = matrix[b][a] = km;
@@ -23,9 +23,10 @@ export function normalizePreferences(value: unknown): Preferences {
   let origin = origins.includes(p.origin as Zone) ? p.origin! : defaults.origin;
   if (mode === "transit" && !urbanZones.includes(origin)) origin = "center";
   if (mode === "bicycle" && !urbanZones.includes(origin)) origin = "center";
-  const selected = Array.isArray(p.interests) ? [...new Set(p.interests)].filter(i => interestKeys.includes(i)).slice(0, 6) : defaults.interests;
+  const selected = Array.isArray(p.interests) ? [...new Set(p.interests)].filter(i => interestKeys.includes(i)).slice(0, 7) : defaults.interests;
   const start = finite(p.start, defaults.start, 480, 780);
   return {
+    districts: Array.isArray(p.districts) ? [...new Set(p.districts)].filter(d => districtNames.includes(d)) : [],
     days: finite(p.days, defaults.days, 1, 4), start, end: finite(p.end, defaults.end, start + 180, 1140), mode, origin,
     pace: ["relaxed", "balanced", "full"].includes(p.pace ?? "") ? p.pace! : defaults.pace,
     interests: selected.length ? selected : defaults.interests,
@@ -59,17 +60,21 @@ export function estimateLeg(from: string, to: string, mode: Mode): Leg {
 export function eligiblePlaces(p: Preferences, date = p.date) {
   const weekday = validDate(date) ? new Date(`${date}T12:00:00Z`).getUTCDay() : -1;
   return places.filter(place => place.status === "existing" && !p.excluded.includes(place.id)
+    && (!p.districts.length || p.districts.includes(place.district))
     && (!p.family || place.family) && (!p.lowWalk || place.lowWalk) && (!p.freeOnly || !place.paid)
     && (p.weather !== "indoors" || place.indoor) && !place.closedDays?.includes(weekday)
     && (p.mode !== "bicycle" && p.mode !== "transit" || urbanZones.includes(place.zone))
     && (p.mode !== "walk" || (urbanZones.includes(p.origin) ? urbanZones.includes(place.zone) : place.zone === p.origin)));
 }
+const landmarkWeight: Record<string, number> = { midas: 100, pessinus: 94, kumbet: 92, ulucami: 94, battal: 91, yunus: 87, eti: 75, gerdek: 84, hamamkaya: 83, sakarya: 90, gurleyik: 88, sorkun: 85, alpu: 81, kayakent: 82, saricakaya: 80, sakarilica: 78, mahmudiye: 79, beylikova: 76, gunyuzu: 75, inonu: 78, odunpazari: 68, devrim: 70, atlihan: 68 };
 function walkingForLeg(leg: Leg, mode: Mode) { return mode === "walk" || leg.km < 1.5 ? leg.km : mode === "transit" ? 0.5 : 0.15; }
 function visitMinutes(id: string, p: Preferences) { return ceil5(placeById[id].minutes * (p.pace === "relaxed" ? 1.2 : p.pace === "full" ? 0.9 : 1) * (p.family ? 1.12 : 1)); }
 /** Every candidate is independently scheduled with a return to the selected base, including meal transfers and breaks. */
 export function schedule(ids: string[], preferences: Preferences, date = preferences.date): DayPlan | null {
   const p = normalizePreferences(preferences);
-  const allowed = new Set(eligiblePlaces(p, date).map(v => v.id));
+  return scheduleNormalized(ids, p, date, new Set(eligiblePlaces(p, date).map(v => v.id)));
+}
+function scheduleNormalized(ids: string[], p: Preferences, date: string, allowed: Set<string>): DayPlan | null {
   if (!ids.length || new Set(ids).size !== ids.length || ids.some(id => !allowed.has(id))) return null;
   let now = p.start, prev = `origin:${p.origin}`, km = 0, travel = 0, walking = 0;
   const items: ScheduleItem[] = [];
@@ -126,8 +131,15 @@ export function schedule(ids: string[], preferences: Preferences, date = prefere
   const interestFit = p.interests.filter(i => covered.has(i)).length;
   const focusFit = p.focus ? ids.filter(id => themeById[p.focus].stops.includes(id)).length : 0;
   const visits = ids.reduce((n, id) => n + visitMinutes(id, p), 0);
-  const modeFit = p.mode === "bicycle" ? ids.filter(id => ["river", "sazova", "kentpark"].includes(placeById[id].zone)).length * 22 : p.mode === "motorcycle" ? ids.filter(id => !urbanZones.includes(placeById[id].zone)).length * 20 : 0;
-  const score = modeFit + interestFit * 38 + ids.length * 12 + focusFit * 55 + Math.min(visits, 300) * 0.12 - travel * 0.11;
+  const relevant = ids.filter(id => placeById[id].interests.some(i => p.interests.includes(i)));
+  const quality = relevant.length / ids.length;
+  const landmark = Math.max(0, ...relevant.map(id => landmarkWeight[id] ?? 15));
+  const rural = ids.some(id => !urbanZones.includes(placeById[id].zone));
+  const modeFit = p.mode === "bicycle" ? ids.filter(id => ["river", "sazova", "kentpark"].includes(placeById[id].zone)).length * 12 : p.mode === "motorcycle" && rural ? 15 : 0;
+  // Relevance and destination value outrank the number of cheap-to-reach urban stops.
+  const score = quality * 95 + interestFit * 25 + landmark * .65 + Math.min(ids.length, 3) * 6
+    + Math.min(visits, 220) * .1 + focusFit * 70 + modeFit + (rural ? 10 : 0)
+    - travel * .045 - (ids.length - relevant.length) * 12;
   return { date, theme: "", items, placeIds: ids, km: round(km), travel, walking: round(walking), finish: now + back.minutes, score };
 }
 function permutations(ids: string[]): string[][] {
@@ -145,7 +157,12 @@ function dayPool(p: Preferences, offset: number) {
   const unique = new Map<string, DayPlan>();
   let evaluated = 0;
   const maxStops = p.pace === "relaxed" || p.family ? 3 : 4;
-  for (const theme of themes) {
+  const districtSeeds = districtNames.flatMap(district => {
+    const stops = places.filter(v => v.district === district && allowed.has(v.id))
+      .sort((a, b) => Number(b.interests.some(i => p.interests.includes(i))) - Number(a.interests.some(i => p.interests.includes(i))) || (landmarkWeight[b.id] ?? 15) - (landmarkWeight[a.id] ?? 15)).map(v => v.id);
+    return Array.from({ length: Math.ceil(stops.length / 4) }, (_, i) => ({ id: `district:${district}`, stops: stops.slice(i * 4, i * 4 + 5) }));
+  });
+  for (const theme of [...themes, ...districtSeeds]) {
     const candidates = theme.stops.filter(id => allowed.has(id));
     for (const group of subsets(candidates, maxStops)) {
       const key = [...group].sort().join("|");
@@ -153,13 +170,18 @@ function dayPool(p: Preferences, offset: number) {
       let best: DayPlan | null = null;
       for (const order of permutations(group)) {
         evaluated++;
-        const day = schedule(order, p, date);
+        const day = scheduleNormalized(order, p, date, allowed);
         if (day && (!best || day.score > best.score)) best = day;
       }
       if (best) { best.theme = theme.id; unique.set(key, best); }
     }
   }
-  return { days: [...unique.values()].sort((a, b) => b.score - a.score || a.placeIds.join().localeCompare(b.placeIds.join())).slice(0, 180), evaluated };
+  const ranked = [...unique.values()].sort((a, b) => b.score - a.score || a.placeIds.join().localeCompare(b.placeIds.join()));
+  const retained = new Set<DayPlan>();
+  // Reserve real candidates for every district before applying the global pool limit.
+  for (const district of districtNames) ranked.filter(day => day.placeIds.some(id => placeById[id].district === district)).slice(0, 5).forEach(day => retained.add(day));
+  for (const day of ranked) { if (retained.size >= 220) break; retained.add(day); }
+  return { days: [...retained].sort((a, b) => b.score - a.score), evaluated };
 }
 function similarity(a: string[], b: string[]) { const aa = new Set(a), bb = new Set(b); const overlap = [...aa].filter(id => bb.has(id)).length; return overlap / Math.max(1, new Set([...aa, ...bb]).size); }
 export function generatePlans(input: unknown): PlanningResult {
@@ -177,24 +199,39 @@ export function generatePlans(input: unknown): PlanningResult {
       if (seen.has(signature)) continue; seen.add(signature);
       next.push({ days: [...state.days, day], used, score: state.score + day.score + [...new Set(day.placeIds.map(id => placeById[id].district))].filter(district => !state.used.some(id => placeById[id].district === district)).length * 9 });
     }
-    // Keep spatially diverse beam entries so one popular urban plan does not erase rural alternatives.
+    // Keep the best state of each district combination. Stop-order variants cannot
+    // consume the beam and erase every rural destination as in the old solver.
     next.sort((a, b) => b.score - a.score);
     const diverse: typeof beam = [];
+    const districtCounts = new Map<string, number>();
     for (const option of next) {
-      if (diverse.length >= 32) break;
-      if (diverse.filter(x => similarity(x.used, option.used) > 0.88).length < 2) diverse.push(option);
+      const key = [...new Set(option.used.map(id => placeById[id].district))].sort().join("|");
+      if ((districtCounts.get(key) ?? 0) >= 2) continue;
+      diverse.push(option); districtCounts.set(key, (districtCounts.get(key) ?? 0) + 1);
+      if (diverse.length >= 96) break;
     }
     beam = diverse;
   }
+  const candidates = beam.filter(state => state.days.length === p.days
+    && (!p.focus || state.used.some(id => themeById[p.focus].stops.includes(id)))
+    && (!p.interests.includes("phrygia") || state.used.some(id => placeById[id].interests.includes("phrygia")))
+    && p.districts.every(district => state.used.some(id => placeById[id].district === district)));
   const plans: Plan[] = [];
-  for (const state of beam) {
-    if (state.days.length !== p.days) continue;
-    if (plans.some(plan => similarity(plan.days.flatMap(d => d.placeIds), state.used) > 0.88)) continue;
-    if (p.focus && !state.used.some(id => themeById[p.focus].stops.includes(id))) continue;
+  const usedSignatures = new Set<string>();
+  while (plans.length < p.alternatives) {
+    const ranked = candidates.filter(state => !usedSignatures.has([...state.used].sort().join("|")))
+      .map(state => {
+        const districts = [...new Set(state.used.map(id => placeById[id].district))];
+        const stopOverlap = Math.max(0, ...plans.map(plan => similarity(plan.days.flatMap(d => d.placeIds), state.used)));
+        const districtOverlap = Math.max(0, ...plans.map(plan => similarity([...new Set(plan.days.flatMap(d => d.placeIds.map(id => placeById[id].district)))], districts)));
+        return { state, stopOverlap, selectionScore: state.score - stopOverlap * 65 - districtOverlap * 85 };
+      }).filter(item => item.stopOverlap <= .88).sort((a, b) => b.selectionScore - a.selectionScore);
+    if (!ranked.length) break;
+    const state = ranked[0].state;
+    usedSignatures.add([...state.used].sort().join("|"));
     plans.push({ id: state.days.map(d => d.placeIds.join(".")).join("~"), days: state.days, score: state.score, covered: p.interests.filter(i => state.used.some(id => placeById[id].interests.includes(i))) });
-    if (plans.length >= p.alternatives) break;
   }
-  return { plans, evaluated: pools.reduce((n, pool) => n + pool.evaluated, 0), eligible: eligiblePlaces(p).length, requestedDays: p.days };
+  return { plans, unavailableDistricts: p.districts.filter(d => !eligiblePlaces(p).some(place => place.district === d)), evaluated: pools.reduce((n, pool) => n + pool.evaluated, 0), eligible: eligiblePlaces(p).length, requestedDays: p.days };
 }
 export function clock(minutes: number) { return `${Math.floor(minutes / 60).toString().padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`; }
 export function mapSearch(query: string) { return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query + " Eskişehir Türkiye")}`; }
@@ -206,7 +243,7 @@ export function directions(from: string, to: string, mode: Mode) {
 export function encodePreferences(p: Preferences) { return encodeURIComponent(JSON.stringify({ v: CATALOG_VERSION, p: normalizePreferences(p) })); }
 export function decodePreferences(value: string): Preferences | null {
   if (value.length > 12000) return null;
-  try { const parsed = JSON.parse(decodeURIComponent(value)); return parsed?.v === CATALOG_VERSION && parsed.p ? normalizePreferences(parsed.p) : null; } catch { return null; }
+  try { const parsed = JSON.parse(decodeURIComponent(value)); return [CATALOG_VERSION, "2026-09-08.1"].includes(parsed?.v) && parsed.p ? normalizePreferences(parsed.p) : null; } catch { return null; }
 }
 /** Demo intent parser: explicit multilingual keywords, no remote LLM call and no free-form factual generation. */
 export function parseRequest(raw: string, current: Preferences): { preferences: Preferences; changed: (keyof Preferences)[] } {
@@ -236,7 +273,9 @@ export function parseRequest(raw: string, current: Preferences): { preferences: 
   if (/inanc|inanç|faith|mosque|glaube|relig|إيمان/.test(q)) selected.push("faith");
   if (/kent|city|stadt|ville|مدينة/.test(q)) selected.push("city");
   if (selected.length) set("interests", [...new Set(selected)]);
-  if (/frig|phryg|yazilikaya|midas|فريج/.test(q)) set("focus", "phrygia");
+  if (/frig|phryg|yazilikaya|midas|فريج/.test(q)) { set("focus", "phrygia"); set("interests", [...new Set([...next.interests, "phrygia" as Interest])]); }
   if (/sivrihisar|سيفري/.test(q)) set("focus", "unesco");
+  const mentioned = districtNames.filter(d => q.includes(d.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("tr-TR")));
+  if (mentioned.length) set("districts", mentioned);
   return { preferences: normalizePreferences(next), changed };
 }
