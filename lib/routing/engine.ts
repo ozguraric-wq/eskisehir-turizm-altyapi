@@ -1,7 +1,8 @@
+import { findTransitLeg, transitAvailable } from "./transit";
 import { districtNames, foodAreas, origins, placeById, places, roadEdges, cyclingEdges, themeById, themes, urbanZones, zoneNames, CATALOG_VERSION } from "./data";
 import type { DayPlan, Interest, Leg, Mode, Plan, PlanningResult, Preferences, ScheduleItem, Zone } from "./types";
 
-export const defaults: Preferences = { days: 2, start: 540, end: 1080, mode: "car", pace: "balanced", interests: ["heritage", "taste"], origin: "center", meal: "local", family: false, lowWalk: false, weather: "outdoors", freeOnly: false, date: "", excluded: [], focus: "", alternatives: 3, districts: [], startMode: "district", cycleKm: 25 };
+export const defaults: Preferences = { days: 2, start: 540, end: 1080, mode: "car", pace: "balanced", interests: ["heritage", "taste"], origin: "center", meal: "local", family: false, lowWalk: false, weather: "outdoors", freeOnly: false, date: "", excluded: [], focus: "", alternatives: 3, districts: [], startMode: "district", cycleKm: 25, transitHoliday: false };
 const modes: Mode[] = ["walk", "transit", "car", "bicycle", "motorcycle"];
 const interestKeys: Interest[] = ["heritage", "phrygia", "nature", "craft", "taste", "faith", "city"];
 const zones = Object.keys(zoneNames) as Zone[];
@@ -12,9 +13,9 @@ function distanceMatrix(edges: [Zone, Zone, number][]) {
   return m;
 }
 const matrix = distanceMatrix(roadEdges), cycleMatrix = distanceMatrix(cyclingEdges);
-export function districtDiscovery(p: Preferences) { return p.startMode === "district" && ["bicycle", "walk", "transit"].includes(p.mode); }
-export function preferencesForDay(day: DayPlan, p: Preferences): Preferences { return { ...p, origin: day.origin, startMode: "fixed" }; }
-export function localTravelMode(day: DayPlan, p: Preferences): Mode { return p.mode === "transit" && !urbanZones.includes(day.origin) ? "walk" : p.mode; }
+export function districtDiscovery(p: Preferences) { return p.startMode === "district" && ["bicycle", "walk"].includes(p.mode); }
+export function preferencesForDay(day: DayPlan, p: Preferences): Preferences { return { ...p, origin: day.origin, start: day.start, startMode: "fixed" }; }
+export function localTravelMode(_day: DayPlan, p: Preferences): Mode { return p.mode; }
 export function cyclingLimit(p: Preferences) { return p.family ? Math.min(18, p.cycleKm) : p.cycleKm; }
 const round = (n: number) => Math.round(n * 10) / 10;
 const ceil5 = (n: number) => Math.ceil(n / 5) * 5;
@@ -30,8 +31,9 @@ export function normalizePreferences(value: unknown): Preferences {
   const mode = modes.includes(p.mode as Mode) ? p.mode! : defaults.mode;
   const origin = origins.includes(p.origin as Zone) ? p.origin! : defaults.origin;
   const selected = Array.isArray(p.interests) ? [...new Set(p.interests)].filter(i => interestKeys.includes(i)).slice(0, 7) : defaults.interests;
-  const start = finite(p.start, defaults.start, 480, 780);
+  const start = finite(p.start, defaults.start, mode === "transit" ? 360 : 480, 780);
   return {
+    transitHoliday: p.transitHoliday === true,
     startMode: p.startMode === "fixed" ? "fixed" : "district", cycleKm: [25, 50, 80].includes(p.cycleKm ?? 0) ? p.cycleKm! : 25,
     districts: Array.isArray(p.districts) ? [...new Set(p.districts)].filter(d => districtNames.includes(d)) : [],
     days: finite(p.days, defaults.days, 1, 4), start, end: finite(p.end, defaults.end, start + 180, 1140), mode, origin,
@@ -55,7 +57,7 @@ export function estimateLeg(from: string, to: string, mode: Mode): Leg {
   const a = zoneOf(from), b = zoneOf(to), city = urbanZones.includes(a) && urbanZones.includes(b);
   const nearbyFood = a === b && (from.startsWith("food:") || to.startsWith("food:"));
   const km = a === b ? nearbyFood ? 0.4 : pairKm[[from, to].sort().join("|")] ?? (city ? 0.9 : 1.5) : (mode === "bicycle" ? cycleMatrix : matrix)[a][b] + 1;
-  if (mode === "transit" && !city && a !== b || mode === "bicycle" && !Number.isFinite(km)) return { from, to, km, minutes: Infinity, rest: 0 };
+  if (mode === "transit" && a !== b || mode === "bicycle" && !Number.isFinite(km)) return { from, to, km, minutes: Infinity, rest: 0 };
   if (mode === "walk" && a !== b && !city) return { from, to, km, minutes: Infinity, rest: 0 };
   const walkingLink = mode === "walk" || mode === "transit" && !city || km < 1.5;
   const speed = walkingLink ? 4 : mode === "bicycle" ? city ? 14 : 11 : mode === "transit" ? 18 : city ? 25 : mode === "motorcycle" ? 50 : 55;
@@ -71,10 +73,28 @@ export function eligiblePlaces(p: Preferences, date = p.date) {
     && (!p.family || place.family) && (!p.lowWalk || place.lowWalk) && (!p.freeOnly || !place.paid)
     && (p.weather !== "indoors" || place.indoor) && !place.closedDays?.includes(weekday)
     && (districtDiscovery(p) || p.mode !== "bicycle" || Number.isFinite(cycleMatrix[p.origin][place.zone]))
-    && (districtDiscovery(p) || !["walk", "transit"].includes(p.mode) || (urbanZones.includes(p.origin) ? urbanZones.includes(place.zone) : place.zone === p.origin)));
+    && (p.mode !== "transit" || validDate(date) && (place.zone === p.origin || transitAvailable(p.origin) && transitAvailable(place.zone)))
+    && (districtDiscovery(p) || p.mode !== "walk" || (urbanZones.includes(p.origin) ? urbanZones.includes(place.zone) : place.zone === p.origin)));
 }
 const landmarkWeight: Record<string, number> = { midas: 100, pessinus: 94, kumbet: 92, ulucami: 94, battal: 91, yunus: 87, eti: 75, gerdek: 84, hamamkaya: 83, sakarya: 90, gurleyik: 88, sorkun: 85, alpu: 81, kayakent: 82, saricakaya: 80, sakarilica: 78, mahmudiye: 79, beylikova: 76, gunyuzu: 75, inonu: 78, odunpazari: 68, devrim: 70, atlihan: 68 };
-function walkingForLeg(leg: Leg, mode: Mode) { return mode === "walk" || leg.km < 1.5 || mode === "transit" && !urbanZones.includes(zoneOf(leg.to)) ? leg.km : mode === "transit" ? 0.5 : 0.15; }
+function walkingForLeg(leg: Leg, mode: Mode) { return leg.walkingKm ?? (mode === "walk" || leg.km < 1.5 || mode === "transit" && !urbanZones.includes(zoneOf(leg.to)) ? leg.km : mode === "transit" ? 0.5 : 0.15); }
+const transitCache = new Map<string, Leg | null>();
+export function timedLeg(from: string, to: string, ready: number, p: Preferences, date = p.date): Leg {
+  if (p.mode !== "transit") return estimateLeg(from, to, p.mode);
+  const a = zoneOf(from), b = zoneOf(to);
+  const walk = estimateLeg(from, to, "walk");
+  if (a === b) return { ...walk, walkingKm: walk.km };
+  const key = `${a}|${b}|${ready}|${date}|${p.transitHoliday}`;
+  if (!transitCache.has(key)) {
+    if (transitCache.size > 16000) transitCache.clear();
+    transitCache.set(key, findTransitLeg(from, to, a, b, ready, date, p.transitHoliday));
+  }
+  const transit = transitCache.get(key);
+  // Only short urban walking links can replace a vehicle stage. Rural access
+  // always needs a published connection or an explicit local starting point.
+  if (urbanZones.includes(a) && urbanZones.includes(b) && walk.km <= 3 && (!transit || walk.minutes <= transit.minutes)) return { ...walk, walkingKm: walk.km };
+  return transit ? { ...transit, from, to } : { from, to, km: 0, minutes: Infinity, rest: 0 };
+}
 function visitMinutes(id: string, p: Preferences) { return ceil5(placeById[id].minutes * (p.pace === "relaxed" ? 1.2 : p.pace === "full" ? 0.9 : 1) * (p.family ? 1.12 : 1)); }
 /** Every candidate is independently scheduled with a return to the selected base, including meal transfers and breaks. */
 export function schedule(ids: string[], preferences: Preferences, date = preferences.date): DayPlan | null {
@@ -82,6 +102,15 @@ export function schedule(ids: string[], preferences: Preferences, date = prefere
   return scheduleNormalized(ids, p, date, new Set(eligiblePlaces(p, date).map(v => v.id)));
 }
 function scheduleNormalized(ids: string[], p: Preferences, date: string, allowed: Set<string>): DayPlan | null {
+  const starts = p.mode === "transit" ? [p.start, ...[420,480,540].filter(time => time > p.start && time + 180 <= p.end)] : [p.start];
+  let best: DayPlan | null = null;
+  for (const start of starts) {
+    const day = fixedSchedule(ids, { ...p,start }, date, allowed);
+    if (day && (!best || day.score > best.score)) best = day;
+  }
+  return best;
+}
+function fixedSchedule(ids: string[], p: Preferences, date: string, allowed: Set<string>): DayPlan | null {
   if (!ids.length || new Set(ids).size !== ids.length || ids.some(id => !allowed.has(id))) return null;
   let now = p.start, prev = `origin:${p.origin}`, km = 0, travel = 0, walking = 0;
   const items: ScheduleItem[] = [];
@@ -89,8 +118,8 @@ function scheduleNormalized(ids: string[], p: Preferences, date: string, allowed
   const addLeg = (leg: Leg) => { km += leg.km; travel += leg.minutes; walking += walkingForLeg(leg, p.mode); };
   const meal = (kind: "lunch" | "dinner", zone: Zone): boolean => {
     const id = `food:${zone}:${kind}`;
-    const leg = estimateLeg(prev, id, p.mode);
-    const earliest = kind === "lunch" ? 720 : 1080, latest = kind === "lunch" ? 840 : 1110;
+    const leg = timedLeg(prev, id, now, p, date);
+    const earliest = kind === "lunch" ? p.mode === "transit" ? 690 : 720 : 1080, latest = kind === "lunch" ? 840 : 1110;
     const start = Math.max(earliest, now + leg.minutes);
     const duration = p.meal === "picnic" || !foodAreas.some(a => a.zone === zone) ? 35 : p.pace === "relaxed" ? 65 : 50;
     if (start > latest || start + duration > p.end) return false;
@@ -102,11 +131,11 @@ function scheduleNormalized(ids: string[], p: Preferences, date: string, allowed
   };
   for (const id of ids) {
     const place = placeById[id];
-    let leg = estimateLeg(prev, id, p.mode);
+    let leg = timedLeg(prev, id, now, p, date);
     const duration = visitMinutes(id, p);
     if (!lunch && now >= 720 && now + leg.minutes + duration > 825) {
       if (!meal("lunch", zoneOf(prev))) return null;
-      leg = estimateLeg(prev, id, p.mode);
+      leg = timedLeg(prev, id, now, p, date);
     }
     const start = Math.max(now + leg.minutes, place.window[0]);
     // A long morning journey must still reach a lunch stop before the lunch window closes.
@@ -114,7 +143,7 @@ function scheduleNormalized(ids: string[], p: Preferences, date: string, allowed
       if (now + leg.minutes <= 825 && now + leg.minutes >= 690) {
         // Arrive at the destination's food area first; the visit leg is then recomputed.
         if (!meal("lunch", place.zone)) return null;
-        leg = estimateLeg(prev, id, p.mode);
+        leg = timedLeg(prev, id, now, p, date);
       } else return null;
     }
     const visitStart = Math.max(now + leg.minutes, place.window[0]);
@@ -125,12 +154,12 @@ function scheduleNormalized(ids: string[], p: Preferences, date: string, allowed
     items.push({ kind: "visit", id, zone: place.zone, start: visitStart, end, leg, wait }); now = end; prev = id;
     if (!lunch && now >= 720) { if (!meal("lunch", place.zone)) return null; }
   }
-  let back = estimateLeg(prev, `origin:${p.origin}`, p.mode);
-  if (!lunch && now + back.minutes >= 720) { if (!meal("lunch", zoneOf(prev))) return null; back = estimateLeg(prev, `origin:${p.origin}`, p.mode); }
-  if (p.end >= 1140 && now + back.minutes >= 1080 && !dinner) { if (!meal("dinner", zoneOf(prev))) return null; back = estimateLeg(prev, `origin:${p.origin}`, p.mode); }
+  let back = timedLeg(prev, `origin:${p.origin}`, now, p, date);
+  if (!lunch && now + back.minutes >= 720) { if (!meal("lunch", zoneOf(prev))) return null; back = timedLeg(prev, `origin:${p.origin}`, now, p, date); }
+  if (p.end >= 1140 && now + back.minutes >= 1080 && !dinner) { if (!meal("dinner", zoneOf(prev))) return null; back = timedLeg(prev, `origin:${p.origin}`, now, p, date); }
   if (now + back.minutes > p.end) return null;
   addLeg(back);
-  const maxWalking = p.lowWalk ? 4 : p.family ? 8 : p.mode === "walk" || p.mode === "transit" && !urbanZones.includes(p.origin) ? (p.pace === "relaxed" ? 7 : 11) : 12;
+  const maxWalking = p.lowWalk ? 4 : p.family ? 8 : p.mode === "walk" || p.mode === "transit" ? (p.pace === "relaxed" ? 7 : 11) : 12;
   const maxDistance = p.mode === "bicycle" ? cyclingLimit(p) : p.mode === "walk" ? maxWalking : 340;
   if (walking > maxWalking || km > maxDistance || travel > (p.end - p.start) * (p.mode === "bicycle" ? 0.68 : 0.64)) return null;
   items.push({ kind: "return", id: `origin:${p.origin}`, zone: p.origin, start: now + back.minutes, end: now + back.minutes, leg: back, wait: 0 });
@@ -147,7 +176,7 @@ function scheduleNormalized(ids: string[], p: Preferences, date: string, allowed
   const score = quality * 95 + interestFit * 25 + landmark * .65 + Math.min(ids.length, 3) * 6
     + Math.min(visits, 220) * .1 + focusFit * 70 + modeFit + (rural ? 10 : 0)
     - travel * .045 - (ids.length - relevant.length) * 12;
-  return { date, theme: "", origin: p.origin, items, placeIds: ids, km: round(km), travel, walking: round(walking), finish: now + back.minutes, score };
+  return { date, theme: "", origin: p.origin, start: p.start, items, placeIds: ids, km: round(km), travel, walking: round(walking), finish: now + back.minutes, score };
 }
 function permutations(ids: string[]): string[][] {
   if (ids.length < 2) return [ids];
@@ -250,7 +279,7 @@ export function generatePlans(input: unknown): PlanningResult {
     usedSignatures.add([...state.used].sort().join("|"));
     plans.push({ id: state.days.map(d => `${d.origin}:` + d.placeIds.join(".")).join("~"), days: state.days, score: state.score, covered: p.interests.filter(i => state.used.some(id => placeById[id].interests.includes(i))) });
   }
-  return { plans, unavailableDistricts: p.districts.filter(d => !eligiblePlaces(p).some(place => place.district === d)), evaluated: pools.reduce((n, pool) => n + pool.evaluated, 0), eligible: eligiblePlaces(p).length, requestedDays: p.days };
+  return { plans, unavailableDistricts: p.districts.filter(d => !pools.some(pool => pool.days.some(day => day.placeIds.some(id => placeById[id].district === d)))), evaluated: pools.reduce((n, pool) => n + pool.evaluated, 0), eligible: eligiblePlaces(p).length, requestedDays: p.days };
 }
 export function clock(minutes: number) { return `${Math.floor(minutes / 60).toString().padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`; }
 export function mapSearch(query: string) { return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query + " Eskişehir Türkiye")}`; }
@@ -262,7 +291,7 @@ export function directions(from: string, to: string, mode: Mode) {
 export function encodePreferences(p: Preferences) { return encodeURIComponent(JSON.stringify({ v: CATALOG_VERSION, p: normalizePreferences(p) })); }
 export function decodePreferences(value: string): Preferences | null {
   if (value.length > 12000) return null;
-  try { const parsed = JSON.parse(decodeURIComponent(value)); return [CATALOG_VERSION, "2026-09-08.1", "2026-09-08.2"].includes(parsed?.v) && parsed.p ? normalizePreferences(parsed.p) : null; } catch { return null; }
+  try { const parsed = JSON.parse(decodeURIComponent(value)); return [CATALOG_VERSION, "2026-09-08.1", "2026-09-08.2", "2026-09-08.3"].includes(parsed?.v) && parsed.p ? normalizePreferences(parsed.p) : null; } catch { return null; }
 }
 /** Demo intent parser: explicit multilingual keywords, no remote LLM call and no free-form factual generation. */
 export function parseRequest(raw: string, current: Preferences): { preferences: Preferences; changed: (keyof Preferences)[] } {

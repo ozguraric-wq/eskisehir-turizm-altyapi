@@ -8,15 +8,18 @@ import ts from "typescript";
 
 // Exercise the actual UI engine without a browser or another runtime dependency.
 const directory = await mkdtemp(join(tmpdir(), "etahb-routing-"));
-for (const module of ["types", "data", "engine", "copy", "hospitality", "exports"]) {
+for (const module of ["types", "data", "engine", "copy", "hospitality", "exports", "transit-data", "transit", "transit-copy"]) {
   const source = await readFile(new URL(`../lib/routing/${module}.ts`, import.meta.url), "utf8");
-  const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText.replace(/from "\.\/(types|data|engine|copy|hospitality|exports)"/g, 'from "./$1.mjs"');
+  const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText.replace(/from "\.\/(types|data|engine|copy|hospitality|exports|transit-data|transit|transit-copy)"/g, 'from "./$1.mjs"');
   await writeFile(join(directory, `${module}.mjs`), js);
 }
-const { generatePlans, normalizePreferences, schedule, estimateLeg, defaults, encodePreferences, decodePreferences, parseRequest, dateForDay, directions, districtDiscovery, cyclingLimit, preferencesForDay, localTravelMode } = await import(pathToFileURL(join(directory, "engine.mjs")));
+const { generatePlans, normalizePreferences, schedule, estimateLeg, defaults, encodePreferences, decodePreferences, parseRequest, dateForDay, directions, districtDiscovery, cyclingLimit, preferencesForDay, localTravelMode, timedLeg } = await import(pathToFileURL(join(directory, "engine.mjs")));
 const { places, placeById, themes, urbanZones, foodAreas, zoneNames } = await import(pathToFileURL(join(directory, "data.mjs")));
 const { copyFor } = await import(pathToFileURL(join(directory, "copy.mjs")));
 const { navigationSegments, phoneMapUrl, calendarFile, foldCalendarLine, printDocumentHtml, placeQuery } = await import(pathToFileURL(join(directory, "exports.mjs")));
+const { departures, findTransitLeg, serviceGroup } = await import(pathToFileURL(join(directory, "transit.mjs")));
+const { buses } = await import(pathToFileURL(join(directory, "transit-data.mjs")));
+const { transitCopy } = await import(pathToFileURL(join(directory, "transit-copy.mjs")));
 const { hospitality } = await import(pathToFileURL(join(directory, "hospitality.mjs")));
 after(() => rm(directory, { recursive: true, force: true }));
 
@@ -50,7 +53,8 @@ function assertPlan(plan, p) {
     assert.equal(day.items.at(-1).id, `origin:${day.origin}`);
     if (!districtDiscovery(p)) assert.equal(day.origin, p.origin);
     assert.equal(day.items.at(-1).end, day.finish);
-    let previous = p.start;
+    assert.ok(day.start >= p.start);
+    let previous = day.start;
     for (const item of day.items) {
       assert.ok(Number.isFinite(item.start) && item.start >= previous + item.leg.minutes + item.wait, "no overlap or missing transfer");
       assert.ok(item.end >= item.start);
@@ -60,12 +64,11 @@ function assertPlan(plan, p) {
         assert.ok(!p.excluded.includes(item.id));
         assert.ok(item.start >= placeById[item.id].window[0] && item.end <= placeById[item.id].window[1]);
         if (p.mode === "bicycle") assert.ok(Number.isFinite(estimateLeg(`origin:${day.origin}`, item.id, p.mode).minutes));
-        if (p.mode === "transit" && !urbanZones.includes(day.origin)) assert.equal(item.zone, day.origin);
         if (p.weather === "indoors") assert.ok(placeById[item.id].indoor);
         if (p.freeOnly) assert.equal(placeById[item.id].paid, false);
         if (p.lowWalk) assert.ok(placeById[item.id].lowWalk);
       }
-      if (item.kind === "meal" && item.id.endsWith("lunch")) assert.ok(item.start >= 720 && item.start <= 840, "lunch window");
+      if (item.kind === "meal" && item.id.endsWith("lunch")) assert.ok(item.start >= (p.mode === "transit" ? 690 : 720) && item.start <= 840, "lunch window");
     }
     if (day.finish >= 720 && p.start <= 840) assert.equal(day.items.filter(i => i.kind === "meal" && i.id.endsWith("lunch")).length, 1);
     if (p.lowWalk) assert.ok(day.walking <= 4);
@@ -79,7 +82,7 @@ function assertPlan(plan, p) {
 test("mode, duration and pace matrix respects time, geography, meals and return", () => {
   let evaluated = 0;
   for (const mode of ["car", "motorcycle", "bicycle", "walk", "transit"]) for (const days of [1, 2, 3, 4]) for (const pace of ["relaxed", "balanced", "full"]) {
-    const p = normalizePreferences({ ...defaults, mode, days, pace });
+    const p = normalizePreferences({ ...defaults, mode, days, pace, date: mode === "transit" ? "2026-09-08" : "" });
     const result = generatePlans(p);
     assert.ok(result.plans.length > 0, `${mode}/${days}/${pace} should yield a usable plan`);
     assert.equal(new Set(result.plans.map(p => p.id)).size, result.plans.length);
@@ -190,7 +193,7 @@ test("Phrygia is mandatory when selected; impossible travel does not fall back t
 });
 
 test("navigation preserves every meal, stop and return across mobile-sized segments", () => {
-  for (const mode of ["car", "motorcycle", "transit", "bicycle", "walk"]) {
+  for (const mode of ["car", "motorcycle", "bicycle", "walk"]) {
     const p = { ...defaults, mode };
     for (const day of generatePlans(p).plans[0].days) {
       const segments = navigationSegments(day, p);
@@ -263,9 +266,9 @@ test("regression: bicycle origins are not silently reset to the city", () => {
   assert.ok(!rural.has("Tepebaşı") && !rural.has("Odunpazarı"));
 });
 
-test("regression: district walking, cycling and transit discovery reach all fourteen districts", () => {
+test("regression: district walking and cycling discovery reach all fourteen districts", () => {
   const districts = [...new Set(places.map(p => p.district))];
-  for (const mode of ["walk", "bicycle", "transit"]) for (const district of districts) {
+  for (const mode of ["walk", "bicycle"]) for (const district of districts) {
     const p = normalizePreferences({ ...defaults, mode, startMode: "district", districts: [district], days: 1 });
     const result = generatePlans(p);
     assert.ok(result.plans.length, `${mode}: ${district}`);
@@ -279,7 +282,7 @@ test("regression: district walking, cycling and transit discovery reach all four
 
 
 test("local departure is consistent in Maps, calendar and PDF, with no fictitious city transfer", () => {
-  for (const mode of ["bicycle", "walk", "transit"]) {
+  for (const mode of ["bicycle", "walk"]) {
     const p = normalizePreferences({ ...defaults, mode, days: 1, date: "2026-09-15", districts: ["Han"], interests: ["phrygia"], startMode: "district" });
     const plan = generatePlans(p).plans[0], day = plan.days[0];
     assert.equal(day.origin, "midas");
@@ -307,8 +310,8 @@ test("cycling distance and family limits apply on sourced valley connections", (
   assert.equal(normalizePreferences({ ...p, mode: "transit", origin: "sivri" }).origin, "sivri");
 });
 
-test("default cycling, walking and transit alternatives do not collapse to central districts", () => {
-  for (const mode of ["bicycle", "walk", "transit"]) {
+test("default cycling and walking alternatives do not collapse to central districts", () => {
+  for (const mode of ["bicycle", "walk"]) {
     const p = normalizePreferences({ ...defaults, mode, days: 1 });
     const result = generatePlans(p);
     const districts = new Set(result.plans.flatMap(p => p.days.flatMap(d => d.placeIds.map(id => placeById[id].district))));
@@ -324,4 +327,94 @@ test("longer cycling preference can connect Phrygian visitor areas without start
   assert.ok(day && day.km > 25 && day.km <= 50);
   assert.equal(day.origin, "midas");
   assert.equal(schedule(["midas", "gerdek", "hamamkaya"], { ...p, cycleKm: 25 }), null);
+});
+
+test("public bus snapshot keeps terminal direction, Fridays, weekends and conditional services", () => {
+  const record = id => buses.find(b => b.id === id);
+  assert.equal(buses.length,18);
+  assert.deepEqual(departures(record(112),0,"2026-09-08"),[1040]);
+  assert.deepEqual(departures(record(112),1,"2026-09-08"),[480]);
+  assert.deepEqual(departures(record(112),0,"2026-09-13"),[]);
+  assert.deepEqual(departures(record(85),1,"2026-09-12"),[570,780,1050]);
+  assert.deepEqual(departures(record(85),1,"2026-09-08",true),[570,780,1050]);
+  assert.deepEqual(departures(record(109),0,"2026-09-10"),[1030]);
+  assert.deepEqual(departures(record(109),0,"2026-09-11"),[600,1030]);
+  assert.deepEqual(departures(record(109),1,"2026-09-12"),[510,840]);
+  assert.deepEqual(departures(record(109),0,"2026-09-11",true),[]);
+  assert.deepEqual(departures(record(108),0,"2026-09-08"),[],"ambiguous coloured Han branches need confirmation");
+  assert.ok(!departures(record(23),0,"2026-09-08").includes(1240),"night duty is not a daytime route");
+  assert.equal(serviceGroup("2026-09-12"),"saturday");
+  assert.ok(departures(record(156),0,"2026-09-12").includes(620));
+  assert.deepEqual(departures(record(156),0,"2026-09-08"),[]);
+});
+
+test("public transport requires a date and never invents access to Phrygian sites", () => {
+  assert.equal(generatePlans({...defaults,mode:"transit"}).plans.length,0);
+  const p = {...defaults,mode:"transit",days:1,date:"2026-09-08",start:360,end:1140};
+  assert.equal(generatePlans({...p,interests:["phrygia"]}).plans.length,0);
+  assert.equal(findTransitLeg("a","b","center","midas",360,p.date),null);
+  assert.equal(generatePlans({...p,districts:["Seyitgazi"]}).plans.length,0,"17:20 outbound and 08:00 inbound cannot make a day trip");
+  assert.ok(generatePlans({...p,origin:"midas",districts:["Han"]}).plans.length,"an explicitly selected local base remains valid");
+});
+
+function assertTransit(plan,p) {
+  assertPlan(plan,p);
+  for (const day of plan.days) {
+    assert.equal(day.origin,p.origin,"transit never relocates the user to a rural base");
+    let previous=day.start;
+    for (const item of day.items) {
+      const journey=item.leg.transit;
+      if (journey) {
+        assert.ok(journey.rides.length<=3);
+        assert.ok(journey.walkingMinutes>0);
+        let last=previous;
+        for (const ride of journey.rides) {
+          assert.ok(ride.depart>=last+5,"boarding and transfer cannot overlap a previous stage");
+          assert.ok(ride.arrive>ride.depart);
+          assert.ok(ride.source.startsWith("https://www."));
+          if (ride.vehicle==="tram") { assert.ok(ride.estimatedBoard && ride.headway>=8); assert.equal(ride.terminalDeparture,undefined); }
+          else assert.ok(Number.isFinite(ride.terminalDeparture));
+          last=ride.arrive;
+        }
+        assert.ok(last<=item.start);
+      }
+      previous=item.end;
+    }
+  }
+}
+
+test("dated rural connections include outbound, boarding buffers and a feasible last return", () => {
+  for (const [date,district] of [["2026-09-08","İnönü"],["2026-09-11","Mihalgazi"],["2026-09-12","İnönü"],["2026-09-12","Mihalgazi"],["2026-09-13","İnönü"]]) {
+    const p=normalizePreferences({...defaults,mode:"transit",date,start:360,end:1140,days:1,districts:[district]});
+    const plans=generatePlans(p).plans;
+    assert.ok(plans.length,`${date} ${district}`);
+    for (const plan of plans) {
+      assertTransit(plan,p);
+      const back=plan.days[0].items.at(-1);
+      assert.ok(back.leg.transit?.rides.some(r=>r.vehicle==="bus"));
+      if (district==="Mihalgazi") assert.equal(plan.days[0].start,480,"do not require idle waiting from 06:00 when 08:00 catches the bus");
+    }
+  }
+  assert.equal(generatePlans({...defaults,mode:"transit",date:"2026-09-13",start:360,end:1140,days:1,districts:["Mihalgazi"]}).plans.length,0);
+});
+
+test("transit Maps, PDF and calendar preserve both directions, actual departure and five languages", () => {
+  const p=normalizePreferences({...defaults,mode:"transit",date:"2026-09-11",start:360,end:1140,days:1,districts:["Mihalgazi"]});
+  const plan=generatePlans(p).plans[0], day=plan.days[0];
+  const rides=day.items.flatMap(i=>i.leg.transit?.rides??[]);
+  const maps=navigationSegments(day,p);
+  assert.equal(maps.filter(s=>new URL(s.url).searchParams.get("travelmode")==="transit").length,rides.length);
+  assert.ok(maps.every(s=>!new URL(s.url).searchParams.has("waypoints")));
+  for(const locale of ["tr","en","de","fr","ar"]) {
+    const c=transitCopy(locale);
+    assert.ok(Object.values(c).every(s=>s.length>0));
+    const ics=calendarFile(plan,p,locale).replace(/\r\n /g,"");
+    assert.equal((ics.match(/BEGIN:VEVENT/g)??[]).length,rides.length+day.items.filter(i=>i.kind!=="return").length);
+    assert.equal((ics.match(/BEGIN:VALARM/g)??[]).length,rides.length);
+    assert.ok(ics.includes("DTSTART:20260911T070000Z"),"10:00 Turkey bus departure is 07:00 UTC");
+    const html=printDocumentHtml(plan,p,locale,"https://example.org/logo.webp");
+    assert.ok(html.includes("08:00–"),"PDF uses this day's actual start");
+    assert.ok(html.includes(c.snapshot));
+    for(const ride of rides) { assert.ok(html.includes(ride.board)); assert.ok(ics.includes(ride.board)); }
+  }
 });

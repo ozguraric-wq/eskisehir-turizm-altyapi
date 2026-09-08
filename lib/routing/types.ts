@@ -24,17 +24,25 @@ export interface RouteTheme { id: string; name: Localized; stops: string[]; inte
 export interface Preferences {
   days: number; start: number; end: number; mode: Mode; pace: Pace;
   startMode: "district" | "fixed"; cycleKm: 25 | 50 | 80;
+  transitHoliday: boolean;
   interests: Interest[]; origin: Zone; meal: MealStyle; family: boolean;
   lowWalk: boolean; weather: Weather; freeOnly: boolean; date: string;
   excluded: string[]; focus: string; alternatives: number; districts: District[];
 }
-export interface Leg { from: string; to: string; km: number; minutes: number; rest: number; }
+export interface TransitRide {
+  line: string; vehicle: "bus" | "tram"; direction: string;
+  board: string; alight: string; depart: number; arrive: number;
+  terminal: string; terminalDeparture?: number; estimatedBoard: boolean;
+  headway?: number; source: string; updated: string;
+}
+export interface TransitJourney { rides: TransitRide[]; walkingMinutes: number; walkingKm: number; waitingMinutes: number; }
+export interface Leg { from: string; to: string; km: number; minutes: number; rest: number; transit?: TransitJourney; walkingKm?: number; }
 export interface ScheduleItem {
   kind: "visit" | "meal" | "return"; id: string; zone: Zone;
   start: number; end: number; leg: Leg; wait: number;
 }
 export interface DayPlan {
-  date: string; theme: string; origin: Zone; items: ScheduleItem[]; placeIds: string[];
+  date: string; theme: string; origin: Zone; start: number; items: ScheduleItem[]; placeIds: string[];
   km: number; travel: number; walking: number; finish: number; score: number;
 }
 export interface Plan { id: string; days: DayPlan[]; score: number; covered: Interest[]; }

@@ -1,6 +1,6 @@
 import { text as t, type Place, type FoodArea, type RouteTheme, type Zone, type Localized, type Interest, type District } from "./types";
 
-export const CATALOG_VERSION = "2026-09-08.3";
+export const CATALOG_VERSION = "2026-09-08.4";
 export const VERIFIED_ON = "2026-09-08";
 const ktb = (path: string) => `https://eskisehir.ktb.gov.tr/${path}`;
 const see = "https://goturkiye.com/eskisehir/see";
@@ -8,6 +8,8 @@ const cuisine = ktb("TR-156622/eskisehir39de-yemek-kulturu.html");
 const sivri = ktb("TR-362650/sivrihisar.html");
 const frig = ktb("TR-158729/frig-vadilerinde-yuruyus-rotalari.html");
 export const sources = [
+  { name: "Eskişehir Büyükşehir Belediyesi · Otobüs hat ve saatleri", url: "https://www.eskisehir.bel.tr/otobus-saatleri" },
+  { name: "ESTRAM · Sefer sıklıkları ve hat şeması", url: "https://www.estram.com.tr/sefer-sklik.php?cat_icerik=5" },
   { name: "İl Kültür ve Turizm Müdürlüğü · Bisiklet güzergâhları", url: "https://eskisehir.ktb.gov.tr/tr-158735/bisiklet.html" },
   { name: "Yazılıkaya · İlçe başlangıçlı bisiklet gezisi", url: "https://www.eskisehir.bel.tr/icerik-detay.php?cat_icerik=1&icerik_id=12683&menu_id=24" },
   { name: "BEBKA · Eskişehir Turizm Rehberi (2018)", url: "https://www.kalkinmakutuphanesi.gov.tr/dokuman/eskisehir-turizm-rehberi/1432" },
