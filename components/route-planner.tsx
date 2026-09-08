@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { LiveRouteAssistant } from "./live-route-assistant";
+import { mobileCopy } from "@/lib/mobile/copy";
+import { saveTrip,readTrips,writeTrips } from "@/lib/mobile/trips";
+import { isNativeApp,shareNativeFile,shareNativeUrl,printNativeHtml,imageDataUrl } from "@/lib/mobile/native";
 import { ArrowRight, Bike, Bookmark, CalendarPlus, Check, ChevronDown, Clock3, Compass, Download, ExternalLink, Footprints, Info, MapPin, Navigation, Printer, Route, Share2, SlidersHorizontal, Sparkles, TrainFront, Trash2, Utensils, Car, Motorbike as Motorcycle } from "lucide-react";
 import { CATALOG_VERSION, districtNames, foodAreas, origins, placeById, places, sources, themeById, themes, urbanZones, zoneNames } from "@/lib/routing/data";
 import { clock, decodePreferences, defaults, encodePreferences, generatePlans, mapSearch, normalizePreferences, parseRequest, districtDiscovery, preferencesForDay, cyclingLimit } from "@/lib/routing/engine";
@@ -23,12 +28,15 @@ type SavedPlan = { id: string; title: string; p: Preferences; planId: string; ve
 
 export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
   const c = copyFor(locale), tc = transitCopy(locale), hc = heritageCopy(locale);
+  const mc=mobileCopy(locale);
+  const [appMode,setAppMode]=useState(process.env.NEXT_PUBLIC_MOBILE_APP === "true");
   const [draft, setDraft] = useState<Preferences>(defaults);
   const [applied, setApplied] = useState<Preferences>(defaults);
   const [result, setResult] = useState(() => generatePlans(defaults));
   const [active, setActive] = useState(0);
   const [dayIndex, setDayIndex] = useState(0);
   const [request, setRequest] = useState("");
+  const [stopSearch,setStopSearch]=useState("");
   const [notice, setNotice] = useState("");
   const [step, setStep] = useState(0);
   const [editing, setEditing] = useState(true);
@@ -48,6 +56,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
   const fmtDuration = (minutes: number) => `${Math.floor(minutes / 60)} ${c.hour}${minutes % 60 ? ` ${minutes % 60} ${c.min}` : ""}`;
 
   useEffect(() => {
+    setAppMode(isNativeApp() || document.documentElement.hasAttribute("data-mobile-app") || new URLSearchParams(location.search).get("app")==="1" || sessionStorage.getItem("etahb-app-preview")==="1" || matchMedia("(display-mode: standalone)").matches);
     setPlatform(/android/i.test(navigator.userAgent) ? "android" : /iphone|ipad|ipod/i.test(navigator.userAgent) || navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1 ? "ios" : "other");
     const media = window.matchMedia("(max-width: 760px)");
     const sync = () => setCompact(media.matches);
@@ -87,7 +96,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
   function useTheme(id: string) {
     const theme = themeById[id];
     const isLong = ["localweekend", "heritageweekend", "discovery", "archaeology", "twobazaars"].includes(id);
-    calculate({ ...draft, focus: id, districts: [], interests: theme.interests, days: isLong ? 2 : 1, mode: ["pedal", "parkpedal"].includes(id) ? "bicycle" : draft.mode }, undefined, true);
+    calculate({ ...draft, required: [], focus: id, districts: [], interests: theme.interests, days: isLong ? 2 : 1, mode: ["pedal", "parkpedal"].includes(id) ? "bicycle" : draft.mode }, undefined, true);
   }
   function interpret() {
     const next = parseRequest(request, draft); setDraft(next.preferences); setNotice(next.changed.length ? c.understood : c.notUnderstood); setStep(0); setEditing(true);
@@ -96,19 +105,21 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
     if (!current) return;
     const item = { id: String(Date.now()), title: planName(current), p: applied, planId: current.id, version: CATALOG_VERSION };
     const next = [item, ...savedPlans.filter(p => !(p.planId === item.planId && JSON.stringify(p.p) === JSON.stringify(item.p)))].slice(0, 8);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setSavedPlans(next); setNotice(c.saved); } catch { setNotice(c.storageError); }
+    try { saveTrip(current,applied,planName(current)); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setSavedPlans(next); setNotice(mc.savedOffline); } catch { setNotice(c.storageError); }
   }
   function deleteSaved(id: string) {
     const next = savedPlans.filter(s => s.id !== id);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setSavedPlans(next); } catch { setNotice(c.storageError); }
+    try { const removed=savedPlans.find(s=>s.id===id);if(removed)writeTrips(readTrips().filter(t=>!(t.plan.id===removed.planId && JSON.stringify(t.preferences)===JSON.stringify(removed.p))));localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setSavedPlans(next); } catch { setNotice(c.storageError); }
   }
   async function share() {
     if (!current) return;
-    const url = new URL(window.location.href); url.hash = `route=${encodePreferences(applied)}&plan=${encodeURIComponent(current.id)}`;
+    const url = isNativeApp() ? new URL(`https://ozguraric-wq.github.io/eskisehir-turizm-altyapi/${locale==="tr"?"":locale+"/"}rotani-olustur/`) : new URL(window.location.href); url.hash = `route=${encodePreferences(applied)}&plan=${encodeURIComponent(current.id)}`;
+    if(isNativeApp()){try{await shareNativeUrl(url.href,planName(current));}catch{setShareFallback(url.href);}return;}
     try { await navigator.clipboard.writeText(url.href); setNotice(c.copied); setShareFallback(""); } catch { setNotice(c.copyFailed); setShareFallback(url.href); }
   }
-  function printPlan() {
+  async function printPlan() {
     if (!current) return;
+    if(isNativeApp()){try{const logo=await imageDataUrl(siteAsset("/brand/logo-mark.webp"));await printNativeHtml(printDocumentHtml(current,applied,locale,logo),c.itinerary);}catch{setNotice(c.storageError);}return;}
     const frame = document.createElement("iframe");
     frame.title = c.itinerary;
     frame.style.cssText = "position:fixed;inset:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none";
@@ -125,14 +136,15 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
     frame.srcdoc = printDocumentHtml(current, applied, locale, new URL(siteAsset("/brand/logo-mark.webp"), window.location.origin).href);
     document.body.appendChild(frame);
   }
-  function exportCalendar() {
+  async function exportCalendar() {
     if (!current) return;
     if (!applied.date) { goToStep(0); setNotice(c.calendarDate); return; }
+    if(isNativeApp()){try{await shareNativeFile(`eskisehir-${applied.date}.ics`,calendarFile(current,applied,locale),c.itinerary);setNotice(c.calendarNote);}catch{setNotice(c.storageError);}return;}
     const url = URL.createObjectURL(new Blob([calendarFile(current, applied, locale)], { type: "text/calendar;charset=utf-8" }));
     const link = document.createElement("a"); link.href = url; link.download = `eskisehir-${applied.date}.ics`; document.body.appendChild(link); link.click(); link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000); setNotice(c.calendarNote);
   }
-  function download() {
+  async function download() {
     if (!current) return;
     const lines = [c.eyebrow, planName(current), c.demo, `${c.transport}: ${c[applied.mode]}`, `${c.origin}: ${districtDiscovery(applied) ? c.districtStart : zoneNames[applied.origin]}`, ""];
     current.days.forEach((d, i) => {
@@ -152,16 +164,18 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
       lines.push("");
     });
     lines.push(c.modelNote, c.mealNote, c.sourceNote);
+    if(isNativeApp()){try{await shareNativeFile(`eskisehir-rota-${locale}.txt`,lines.join("\n"),c.itinerary);}catch{setNotice(c.storageError);}return;}
     const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/plain;charset=utf-8" }); const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = `eskisehir-rota-${locale}.txt`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   return (
     <div className="route-planner-v2" lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
-      <div className="rp-demo-notice rp-no-print" role="note" aria-labelledby={`route-demo-${locale}`}>
+      {appMode ? <LiveRouteAssistant locale={locale} preferences={draft} onApply={p=>calculate(p,undefined,true)}/> : <div className="rp-demo-notice rp-no-print" role="note" aria-labelledby={`route-demo-${locale}`}>
         <Info size={19} aria-hidden="true" />
         <div><strong id={`route-demo-${locale}`}>{c.demoTitle}</strong><p>{c.demoExplanation}</p></div>
-      </div>
+      </div>}
+      {appMode && <div className="app-route-utility"><Link href={`${locale==="tr"?"":`/${locale}`}/gezilerim`}><Bookmark size={16}/>{mc.trips}</Link></div>}
       <details className="rp-assistant rp-no-print">
         <summary><Sparkles size={19} aria-hidden="true" /><span>{c.writePreferences}</span><ChevronDown size={18} aria-hidden="true" /></summary>
         <div className="rp-assistant-content"><p>{c.parserNote}</p><form onSubmit={e => { e.preventDefault(); interpret(); }} className="rp-prompt-form"><label className="sr-only" htmlFor={`route-request-${locale}`}>{c.prompt}</label><input id={`route-request-${locale}`} value={request} onChange={e => setRequest(e.target.value)} placeholder={c.placeholder} maxLength={600} /><button type="submit" disabled={!request.trim()}>{c.interpret}<ArrowRight size={18} aria-hidden="true" /></button></form>{notice && <p role="status">{notice}</p>}</div>
@@ -176,7 +190,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
               <fieldset><legend>{c.days}</legend><div className="rp-segment">{[1, 2, 3, 4].map(n => <button type="button" key={n} aria-pressed={draft.days === n} className={draft.days === n ? "selected" : ""} onClick={() => change("days", n)}>{n} <span>{c.day}</span></button>)}</div></fieldset>
               <label>{c.date}<input type="date" value={draft.date} aria-required={draft.mode === "transit"} onChange={e => change("date", e.target.value)} />{draft.mode === "transit" && !draft.date && <span className="rp-field-help" role="status">{tc.needDate}</span>}</label>
               {draft.mode === "transit" && <div className="rp-transit-date"><label><input type="checkbox" checked={draft.transitHoliday} onChange={e => change("transitHoliday",e.target.checked)}/><span>{tc.holiday}</span></label><p className="rp-field-help">{tc.holidayNote}</p></div>}
-              <div className="rp-two-fields"><label>{draft.mode === "transit" ? tc.earliest : c.start}<select value={draft.start} onChange={e => change("start", Number(e.target.value))}>{(draft.mode === "transit" ? [360, 420, 480, 540, 600, 660, 720, 780] : [480, 540, 600, 660, 720, 780]).map(n => <option key={n} value={n}>{clock(n)}</option>)}</select></label><label>{c.end}<select value={draft.end} onChange={e => change("end", Number(e.target.value))}>{[720, 780, 840, 900, 960, 1020, 1080, 1140].filter(n => n >= draft.start + 180).map(n => <option key={n} value={n}>{clock(n)}</option>)}</select></label></div>
+              <div className="rp-two-fields"><label>{draft.mode === "transit" ? tc.earliest : c.start}<select value={draft.start} onChange={e => change("start", Number(e.target.value))}>{[...new Set([draft.start,360,420,480,540,600,660,720,780,840,900,960,1020,1080])].sort((a,b)=>a-b).map(n => <option key={n} value={n}>{clock(n)}</option>)}</select></label><label>{c.end}<select value={draft.end} onChange={e => change("end", Number(e.target.value))}>{[...new Set([draft.end,420,480,540,600,660,720,780,840,900,960,1020,1080,1140])].sort((a,b)=>a-b).filter(n => n >= draft.start + 60).map(n => <option key={n} value={n}>{clock(n)}</option>)}</select></label></div>
               <label>{districtDiscovery(draft) ? c.accessOrigin : c.origin}<select value={draft.origin} onChange={e => change("origin", e.target.value as Preferences["origin"])}>{origins.map(z => <option key={z} value={z}>{zoneNames[z]}</option>)}</select><span className="rp-field-help">{districtDiscovery(draft) ? c.districtStartHelp : c.originNote}</span></label>
             </fieldset>
             <fieldset className="rp-step-pane" hidden={step !== 1} data-step="1" tabIndex={-1}><legend className="sr-only">2. {c.stepDiscover}</legend>
@@ -188,6 +202,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
               <fieldset className="rp-district-picker"><legend>{c.districts}</legend><p className="rp-field-help">{c.districtHelp}</p><details><summary>{draft.districts.length ? draft.districts.join(" · ") : `${c.allDistricts} (14)`}<ChevronDown size={17} aria-hidden="true" /></summary><div className="rp-toggle-list">{districtNames.map(d => <label key={d}><input type="checkbox" checked={draft.districts.includes(d)} onChange={() => change("districts", draft.districts.includes(d) ? draft.districts.filter(x => x !== d) : [...draft.districts, d])} /><span>{d}</span></label>)}</div>{draft.districts.length > 0 && <button type="button" className="rp-text-button" onClick={() => change("districts", [])}>{c.allDistricts}</button>}</details></fieldset>
             </fieldset>
             <fieldset className="rp-step-pane" hidden={step !== 2} data-step="2" tabIndex={-1}><legend className="sr-only">3. {c.stepPersonal}</legend>
+              <details className="app-must-see"><summary>{mc.mustSee} ({draft.required?.length??0}/8)<ChevronDown size={17}/></summary><p className="rp-field-help">{mc.mustSeeHint}</p><label>{mc.searchStops}<input type="search" value={stopSearch} onChange={e=>setStopSearch(e.target.value)} maxLength={80}/></label><div className="rp-toggle-list">{places.filter(place=>`${place.name} ${place.district}`.toLocaleLowerCase("tr").includes(stopSearch.toLocaleLowerCase("tr"))).sort((a,b)=>Number(draft.required?.includes(b.id)??false)-Number(draft.required?.includes(a.id)??false)||Number(b.interests.some(i=>draft.interests.includes(i)))-Number(a.interests.some(i=>draft.interests.includes(i)))).slice(0,stopSearch?47:8).map(place=><label key={place.id}><input type="checkbox" checked={draft.required?.includes(place.id)??false} disabled={(draft.required?.length??0)>=8&&!draft.required?.includes(place.id)} onChange={()=>setDraft(p=>normalizePreferences({...p,required:p.required?.includes(place.id)?p.required.filter(id=>id!==place.id):[...(p.required??[]),place.id],excluded:p.excluded.filter(id=>id!==place.id)}))}/><span>{place.name}<small>{place.district}</small></span></label>)}</div></details>
               <fieldset><legend>{c.pace}</legend><div className="rp-segment">{(["relaxed", "balanced", "full"] as const).map(i => <button key={i} type="button" className={draft.pace === i ? "selected" : ""} aria-pressed={draft.pace === i} onClick={() => change("pace", i)}>{c[i]}</button>)}</div></fieldset>
               <label>{c.meal}<select value={draft.meal} onChange={e => change("meal", e.target.value as Preferences["meal"])}>{(["local", "vegetarian", "picnic"] as const).map(i => <option key={i} value={i}>{c[i]}</option>)}</select></label>
               <details className="rp-extra-preferences"><summary>{c.morePreferences}<ChevronDown size={17} aria-hidden="true" /></summary><div>
@@ -241,7 +256,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
                           </summary>
                           <div className="rp-stop-detail">
                             <div className="rp-detail-journey"><span>~{item.leg.km} km · {item.leg.minutes} {c.min}{item.leg.rest > 0 ? ` · ${item.leg.rest} ${c.min} ${c.rest}` : ""}</span>{item.wait > 0 && <span>{item.wait} {c.min} · {c.wait}</span>}<a href={legMapUrl(item.leg.from, item.leg.to, dayPrefs)} target="_blank" rel="noreferrer">{c.routeLink}<ExternalLink size={14} aria-hidden="true" /></a><a href={phoneMapUrl(item.id, dayPrefs, platform)} target={platform === "android" ? undefined : "_blank"} rel="noreferrer">{c.phoneMap}<MapPin size={14} aria-hidden="true" /></a></div>
-                            {stop ? <><p>{stop.summary[locale]}</p><p className="rp-stop-note">{c[stop.note]}</p><div className="rp-stop-links"><a href={stop.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a><button type="button" className="rp-no-print" onClick={() => calculate({ ...applied, excluded: [...applied.excluded, stop.id] })} aria-label={`${c.remove}: ${stop.name}`}><Trash2 size={14} aria-hidden="true" />{c.remove}</button></div></> : item.kind === "meal" ? <><p>{applied.meal === "picnic" ? c.picnicNote : !food ? c.packedNote : food[applied.meal][locale]}</p>{!isPacked && <><a className="rp-restaurant-link" target="_blank" rel="noreferrer" href={mapSearch(`${food!.name} restoran`)}>{c.restaurants}<ExternalLink size={15} aria-hidden="true" /></a><p className="rp-stop-note">{c.mealNote}</p><a className="rp-food-source" href={food!.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a></>}</> : null}
+                            {stop ? <><p>{stop.summary[locale]}</p><p className="rp-stop-note">{c[stop.note]}</p><div className="rp-stop-links"><a href={stop.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a><button type="button" className="rp-no-print" onClick={() => calculate({ ...applied, required: applied.required?.filter(id=>id!==stop.id), excluded: [...applied.excluded, stop.id] })} aria-label={`${c.remove}: ${stop.name}`}><Trash2 size={14} aria-hidden="true" />{c.remove}</button></div></> : item.kind === "meal" ? <><p>{applied.meal === "picnic" ? c.picnicNote : !food ? c.packedNote : food[applied.meal][locale]}</p>{!isPacked && <><a className="rp-restaurant-link" target="_blank" rel="noreferrer" href={mapSearch(`${food!.name} restoran`)}>{c.restaurants}<ExternalLink size={15} aria-hidden="true" /></a><p className="rp-stop-note">{c.mealNote}</p><a className="rp-food-source" href={food!.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a></>}</> : null}
                             <RouteDiscoveries key={entryKey} items={localDiscoveries} locale={locale} area={`${zoneNames[item.zone]}, Eskişehir`}/>
                           </div>
                         </details>

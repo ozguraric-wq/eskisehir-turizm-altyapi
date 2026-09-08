@@ -31,18 +31,19 @@ export function normalizePreferences(value: unknown): Preferences {
   const mode = modes.includes(p.mode as Mode) ? p.mode! : defaults.mode;
   const origin = origins.includes(p.origin as Zone) ? p.origin! : defaults.origin;
   const selected = Array.isArray(p.interests) ? [...new Set(p.interests)].filter(i => interestKeys.includes(i)).slice(0, 7) : defaults.interests;
-  const start = finite(p.start, defaults.start, mode === "transit" ? 360 : 480, 780);
+  const start = finite(p.start, defaults.start, 360, 1080);
   return {
     transitHoliday: p.transitHoliday === true,
     startMode: p.startMode === "fixed" ? "fixed" : "district", cycleKm: [25, 50, 80].includes(p.cycleKm ?? 0) ? p.cycleKm! : 25,
     districts: Array.isArray(p.districts) ? [...new Set(p.districts)].filter(d => districtNames.includes(d)) : [],
-    days: finite(p.days, defaults.days, 1, 4), start, end: finite(p.end, defaults.end, start + 180, 1140), mode, origin,
+    days: finite(p.days, defaults.days, 1, 4), start, end: finite(p.end, defaults.end, start + 60, 1140), mode, origin,
     pace: ["relaxed", "balanced", "full"].includes(p.pace ?? "") ? p.pace! : defaults.pace,
     interests: selected.length ? selected : defaults.interests,
     meal: ["local", "vegetarian", "picnic"].includes(p.meal ?? "") ? p.meal! : defaults.meal,
     family: p.family === true, lowWalk: p.lowWalk === true, freeOnly: p.freeOnly === true,
     weather: p.weather === "indoors" ? "indoors" : "outdoors", date: validDate(p.date) ? p.date : "",
     excluded: Array.isArray(p.excluded) ? [...new Set(p.excluded)].filter(id => typeof id === "string" && Object.hasOwn(placeById, id)).slice(0, places.length) : [],
+    required: Array.isArray(p.required) ? [...new Set(p.required)].filter(id => typeof id === "string" && Object.hasOwn(placeById, id)).slice(0, 8) : [],
     focus: typeof p.focus === "string" && Object.hasOwn(themeById, p.focus) ? p.focus : "", alternatives: finite(p.alternatives, 3, 2, 6),
   };
 }
@@ -198,7 +199,8 @@ function dayPoolAt(p: Preferences, offset: number) {
       .sort((a, b) => Number(b.interests.some(i => p.interests.includes(i))) - Number(a.interests.some(i => p.interests.includes(i))) || (landmarkWeight[b.id] ?? 15) - (landmarkWeight[a.id] ?? 15)).map(v => v.id);
     return Array.from({ length: Math.ceil(stops.length / 4) }, (_, i) => ({ id: `district:${district}`, stops: stops.slice(i * 4, i * 4 + 5) }));
   });
-  for (const theme of [...themes, ...districtSeeds]) {
+  const requestedSeed = { id: "requested", stops: p.required ?? [] };
+  for (const theme of [...themes, ...districtSeeds, requestedSeed]) {
     const candidates = theme.stops.filter(id => allowed.has(id));
     for (const group of subsets(candidates, maxStops)) {
       const key = [...group].sort().join("|");
@@ -209,11 +211,12 @@ function dayPoolAt(p: Preferences, offset: number) {
         const day = scheduleNormalized(order, p, date, allowed);
         if (day && (!best || day.score > best.score)) best = day;
       }
-      if (best) { best.theme = theme.id; unique.set(key, best); }
+      if (best) { best.theme = theme.id; best.score += best.placeIds.filter(id => p.required?.includes(id)).length * 160; unique.set(key, best); }
     }
   }
   const ranked = [...unique.values()].sort((a, b) => b.score - a.score || a.placeIds.join().localeCompare(b.placeIds.join()));
   const retained = new Set<DayPlan>();
+  for (const id of p.required ?? []) ranked.filter(day => day.placeIds.includes(id)).slice(0, 12).forEach(day => retained.add(day));
   // Reserve real candidates for every district before applying the global pool limit.
   for (const district of districtNames) ranked.filter(day => day.placeIds.some(id => placeById[id].district === district)).slice(0, 5).forEach(day => retained.add(day));
   for (const day of ranked) { if (retained.size >= 220) break; retained.add(day); }
@@ -253,7 +256,7 @@ export function generatePlans(input: unknown): PlanningResult {
     const diverse: typeof beam = [];
     const districtCounts = new Map<string, number>();
     for (const option of next) {
-      const key = [...new Set(option.used.map(id => placeById[id].district))].sort().join("|");
+      const key = [...new Set(option.used.map(id => placeById[id].district))].sort().join("|") + ":" + (p.required ?? []).filter(id => option.used.includes(id)).sort().join(",");
       if ((districtCounts.get(key) ?? 0) >= 2) continue;
       diverse.push(option); districtCounts.set(key, (districtCounts.get(key) ?? 0) + 1);
       if (diverse.length >= 96) break;
@@ -261,6 +264,7 @@ export function generatePlans(input: unknown): PlanningResult {
     beam = diverse;
   }
   const candidates = beam.filter(state => state.days.length === p.days
+    && (p.required ?? []).every(id => state.used.includes(id))
     && (!p.focus || state.used.some(id => themeById[p.focus].stops.includes(id)))
     && (!p.interests.includes("phrygia") || state.used.some(id => placeById[id].interests.includes("phrygia")))
     && p.districts.every(district => state.used.some(id => placeById[id].district === district)));

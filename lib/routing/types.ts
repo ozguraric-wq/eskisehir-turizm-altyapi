@@ -28,6 +28,8 @@ export interface Preferences {
   interests: Interest[]; origin: Zone; meal: MealStyle; family: boolean;
   lowWalk: boolean; weather: Weather; freeOnly: boolean; date: string;
   excluded: string[]; focus: string; alternatives: number; districts: District[];
+  /** Explicit must-see stops. A returned itinerary must include every one. */
+  required?: string[];
 }
 export interface TransitRide {
   line: string; vehicle: "bus" | "tram"; direction: string;

@@ -1,6 +1,7 @@
 /** Cloudflare Worker entry point for the vinext-starter template. */
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
+import { handleAssistantApi } from "../lib/mobile/assistant-server";
 
 interface Env {
   ASSETS: Fetcher;
@@ -8,6 +9,10 @@ interface Env {
   SITE_AUTH_USERNAME?: string;
   SITE_AUTH_PASSWORD?: string;
   SITE_AUTH_SESSION_SECRET?: string;
+  OPENAI_API_KEY?: string;
+  OPENAI_MODEL?: string;
+  AI_DAILY_LIMIT?: string;
+  AI_ALLOWED_ORIGINS?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -30,6 +35,7 @@ interface ExecutionContext {
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    if (new URL(request.url).pathname.startsWith("/api/mobile/")) return handleAssistantApi(request, env);
     const authResponse = await handleAccessGate(request, env);
     if (authResponse) return authResponse;
 

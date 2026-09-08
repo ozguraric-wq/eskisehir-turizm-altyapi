@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { MobileShell } from "@/components/mobile-shell";
 import "./globals.css";
+import "./mobile.css";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const isGitHubPages = process.env.NEXT_PUBLIC_GITHUB_PAGES === "true";
+const isMobile = process.env.NEXT_PUBLIC_MOBILE_APP === "true";
 
 export const metadata: Metadata = {
   metadataBase: isGitHubPages ? new URL("https://ozguraric-wq.github.io") : undefined,
@@ -35,6 +38,8 @@ export const metadata: Metadata = {
     icon: `${basePath}/favicon.svg`,
     shortcut: `${basePath}/favicon.svg`,
   },
+  manifest: `${basePath}/manifest.webmanifest`,
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Eskişehir" },
 };
 
 export default function RootLayout({
@@ -43,8 +48,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" className={isGitHubPages ? "auth-pending" : undefined}>
-      {isGitHubPages ? <Script src={`${basePath}/auth.js`} strategy="beforeInteractive" /> : null}
+    <html lang="tr" className={isGitHubPages || isMobile ? "auth-pending" : undefined} data-mobile-app={isMobile ? "" : undefined}>
+      {isGitHubPages || isMobile ? <Script src={`${basePath}/auth.js`} strategy="beforeInteractive" /> : null}
       <body>
         <a className="skip-link" href="#ana-icerik">
           Ana içeriğe geç
@@ -52,6 +57,7 @@ export default function RootLayout({
         <SiteHeader />
         {children}
         <SiteFooter />
+        <MobileShell />
       </body>
     </html>
   );
