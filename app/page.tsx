@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { districts, projectCards } from "@/lib/content";
 import { siteAsset } from "@/lib/site-path";
+import { CityBanner } from "@/components/city-banner";
 
 const serviceIcons = [Building2, BarChart3, ShieldCheck, UsersRound, Bot];
 const projectIcons = [CircleUserRound, Route, Caravan, Film, Sparkles, Mountain];
@@ -30,52 +31,7 @@ const projectIcons = [CircleUserRound, Route, Caravan, Film, Sparkles, Mountain]
 export default function Home() {
   return (
     <main id="ana-icerik">
-      <section className="relative isolate min-h-[720px] overflow-hidden bg-[#17212b] text-white">
-        <img
-          className="absolute inset-0 -z-20 h-full w-full object-cover"
-          src={siteAsset("/media/eskisehir-hero.webp")}
-          alt="Eskişehir'in ovalarını, kaya dokusunu, su kaynaklarını ve bağlantı yollarını temsil eden panoramik görünüm"
-        />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(17,24,32,.96)_0%,rgba(17,24,32,.86)_38%,rgba(17,24,32,.32)_72%,rgba(17,24,32,.15)_100%)]" />
-        <div className="site-shell flex min-h-[720px] items-center py-20">
-          <div className="max-w-[760px]">
-            <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-bold tracking-[.12em] uppercase backdrop-blur">
-              <ShieldCheck aria-hidden="true" size={16} />
-              Valilik öncülüğünde ortak turizm koordinasyonu
-            </span>
-            <h1 className="display-title max-w-[740px] text-white">
-              Eskişehir turizmine yön veren ortak kamu kapasitesi.
-            </h1>
-            <p className="mt-7 max-w-[680px] text-lg leading-8 text-white/85 md:text-xl">
-              14 ilçenin yatırım sırasını, hizmet standardını, veri yönetimini ve destinasyon anlatısını ortaklaştıran; Vizyon Eskişehir 2036 kapsamında diğer illere emsal olmak üzere tasarlanan kurumsal model.
-            </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Link className="button-light" href="/kurumsal">
-                Birliği Tanıyın <ArrowRight aria-hidden="true" size={17} />
-              </Link>
-              <Link className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/35 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20" href="/rotani-olustur">
-                Çoklu rota oluştur <ChevronRight aria-hidden="true" size={17} />
-              </Link>
-            </div>
-            <div className="mt-12 grid max-w-[720px] grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/20 bg-white/20 sm:grid-cols-4">
-              {[
-                ["14", "ilçe"],
-                ["1", "ortak destinasyon planı"],
-                ["4 mevsim", "dengeli ziyaretçi akışı"],
-                ["1", "doğrulanmış veri omurgası"],
-              ].map(([number, label]) => (
-                <div className="bg-[#17212b]/70 px-5 py-5 backdrop-blur" key={label}>
-                  <strong className="block font-serif text-3xl font-normal text-[#edc887]">{number}</strong>
-                  <span className="mt-1 block text-xs font-semibold text-white/70">{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="absolute right-5 bottom-5 hidden rounded-full border border-white/20 bg-black/30 px-3 py-1.5 text-[10px] text-white/70 backdrop-blur md:block">
-          Temsili kurumsal görselleştirme
-        </div>
-      </section>
+      <CityBanner />
 
       <section className="border-b border-[#ded7cc] bg-white">
         <div className="site-shell grid md:grid-cols-5">

@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, BarChart3, Building2, Database, ExternalLink, Landmark, Mountain, ShieldCheck, UsersRound } from "lucide-react";
-import { InternationalRoutePlanner } from "@/components/international-route-planner";
+import { copyFor } from "@/lib/routing/copy";
+import { CityBanner } from "@/components/city-banner";
 import { internationalCopy, type InternationalLocale } from "@/lib/international";
-import { siteAsset } from "@/lib/site-path";
 
 const locales = Object.keys(internationalCopy) as InternationalLocale[];
 
@@ -23,16 +23,13 @@ export default async function InternationalPage({ params }: { params: Promise<{ 
   if (!locales.includes(lang as InternationalLocale)) notFound();
   const locale = lang as InternationalLocale;
   const copy = internationalCopy[locale];
+  const routeCopy = copyFor(locale);
   const impactIcons = [Building2, Database, BarChart3, ShieldCheck];
   const heritageIcons = [Mountain, Landmark, ShieldCheck, UsersRound];
 
   return (
     <main id="ana-icerik" lang={locale} dir={copy.dir} className={copy.dir === "rtl" ? "rtl-page" : ""}>
-      <section className="intl-hero">
-        <img src={siteAsset("/media/eskisehir-hero.webp")} alt="Eskişehir landscape" />
-        <div className="intl-hero-overlay" />
-        <div className="site-shell intl-hero-inner"><span>{copy.eyebrow}</span><h1>{copy.hero}</h1><p>{copy.lead}</p><div className="flex flex-wrap gap-3"><a className="button-light" href="#institution">{copy.institutionTitle}<ArrowRight aria-hidden="true" size={16} /></a><a className="intl-ghost-button" href="#routes">{copy.routesTitle}</a></div></div>
-      </section>
+      <CityBanner locale={locale} />
 
       <section className="content-section" id="institution"><div className="site-shell"><div className="max-w-4xl"><p className="eyebrow">2036</p><h2 className="section-title">{copy.institutionTitle}</h2><p className="section-copy">{copy.institutionLead}</p></div><div className="intl-card-grid">{copy.institution.map(([title, text], index) => { const Icon = impactIcons[index]; return <article className="card" key={title}><span className="icon-box"><Icon aria-hidden="true" size={21} /></span><h3>{title}</h3><p>{text}</p></article>; })}</div></div></section>
 
@@ -40,9 +37,11 @@ export default async function InternationalPage({ params }: { params: Promise<{ 
 
       <section className="content-section" id="heritage"><div className="site-shell"><div className="max-w-4xl"><p className="eyebrow">Eskişehir</p><h2 className="section-title">{copy.heritageTitle}</h2></div><div className="intl-card-grid">{copy.heritage.map(([title, text], index) => { const Icon = heritageIcons[index]; return <article className="card" key={title}><span className="icon-box"><Icon aria-hidden="true" size={21} /></span><h3>{title}</h3><p>{text}</p></article>; })}</div><div className="mt-8 flex flex-wrap gap-3"><a className="button-secondary" href="https://eskisehir.ktb.gov.tr/TR-111540/ilceler.html" rel="noreferrer" target="_blank">14 districts <ExternalLink aria-hidden="true" size={15} /></a><a className="button-secondary" href="https://ci.turkpatent.gov.tr/cografi-isaretler/liste?il=26" rel="noreferrer" target="_blank">Registered geographical indications <ExternalLink aria-hidden="true" size={15} /></a></div></div></section>
 
-      <section className="content-section soft-section" id="routes"><div className="site-shell"><div className="max-w-4xl"><p className="eyebrow">Smart route prototype</p><h2 className="section-title">{copy.routesTitle}</h2><p className="section-copy">{copy.routesLead}</p></div><div className="mt-10"><InternationalRoutePlanner locale={locale} /></div></div></section>
+
 
       <section className="content-section" id="programmes"><div className="site-shell"><div className="max-w-4xl"><p className="eyebrow">Planned portfolio</p><h2 className="section-title">{copy.programmesTitle}</h2></div><div className="intl-programmes">{copy.programmes.map(([title, text], index) => <article key={title}><span>{String(index + 1).padStart(2, "0")}</span><h3>{title}</h3><p>{text}</p></article>)}</div></div></section>
+
+      <section className="content-section soft-section" id="routes"><div className="site-shell"><div className="discovery-entry"><div><p className="eyebrow">{routeCopy.eyebrow}</p><h2 className="section-title">{routeCopy.routeIntro}</h2><p className="section-copy">{copy.routesLead}</p><Link className="button-primary mt-6" href={`/${locale}/rotani-olustur`}>{routeCopy.generate}<ArrowRight size={17} aria-hidden="true" /></Link></div><div className="discovery-entry-facts"><span><strong>36</strong>{routeCopy.ideas}</span><span><strong>5</strong>{routeCopy.modes}</span></div></div></div></section>
 
       <section className="pb-24"><div className="site-shell intl-final"><ShieldCheck aria-hidden="true" size={27} /><div><h2>{copy.valueTitle}</h2><p>{copy.verify}</p></div><Link className="button-light" href="/tuzuk">Draft charter <ArrowRight aria-hidden="true" size={16} /></Link></div></section>
     </main>

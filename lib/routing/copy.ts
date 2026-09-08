@@ -1,5 +1,22 @@
 import { text as t, type Locale } from "./types";
 const strings = {
+  preferencesIntro: t("Rotanız burada başlıyor. Üç kısa adımda seçimlerinizi yapın; size uygun alternatifleri hazırlayalım.", "Your trip starts here. Make your choices in three short steps and we’ll build your alternatives.", "Hier beginnt Ihre Reise. Wählen Sie in drei kurzen Schritten Ihre Wünsche für passende Routen.", "Votre voyage commence ici. Trois étapes pour choisir vos envies et créer vos itinéraires.", "تبدأ رحلتكم هنا. حددوا اختياراتكم في ثلاث خطوات قصيرة لنعد مسارات تناسبكم."),
+  stepTime: t("Zaman", "Time", "Zeit", "Durée", "الوقت"),
+  stepDiscover: t("Keşif", "Explore", "Entdecken", "Découverte", "الاكتشاف"),
+  stepPersonal: t("Tercihler", "Your needs", "Wünsche", "Vos besoins", "احتياجاتكم"),
+  next: t("Devam et", "Continue", "Weiter", "Continuer", "متابعة"),
+  back: t("Geri", "Back", "Zurück", "Retour", "رجوع"),
+  editPreferences: t("Tercihleri düzenle", "Edit preferences", "Wünsche bearbeiten", "Modifier mes préférences", "تعديل التفضيلات"),
+  selectionSummary: t("Seçimleriniz", "Your choices", "Ihre Auswahl", "Vos choix", "اختياراتكم"),
+  morePreferences: t("Ek ihtiyaçlar ve seçenekler", "More needs and options", "Weitere Wünsche und Optionen", "Besoins et options supplémentaires", "احتياجات وخيارات إضافية"),
+  writePreferences: t("İsterseniz gezinizi yazarak anlatın", "Prefer to describe your trip?", "Beschreiben Sie Ihre Reise", "Décrivez votre voyage si vous préférez", "يمكنكم وصف رحلتكم كتابةً"),
+  welcomeTitle: t("Birkaç seçim, size özel bir Eskişehir.", "A few choices. Your own Eskişehir.", "Ein paar Wünsche. Ihr eigenes Eskişehir.", "Quelques choix. Votre Eskişehir.", "اختيارات قليلة. إسكي شهير كما تحبونها."),
+  welcomeNote: t("Önce gezi tercihlerinizi tamamlayın. Ardından alternatif rotaları karşılaştırın; yemek molalarını ve durak ayrıntılarını planınızda görün.", "Complete your trip preferences, then compare routes with meal breaks and detailed stops.", "Wählen Sie Ihre Wünsche und vergleichen Sie Routen mit Essenspausen und Details zu jeder Station.", "Complétez vos préférences, puis comparez les itinéraires avec pauses repas et détails des étapes.", "أكملوا تفضيلات الرحلة ثم قارنوا المسارات مع استراحات الطعام وتفاصيل المحطات."),
+  multiSelect: t("Birden fazla seçebilirsiniz.", "Choose more than one.", "Mehrfachauswahl möglich.", "Plusieurs choix possibles.", "يمكنكم اختيار أكثر من خيار."),
+  planActions: t("Kaydet, paylaş ve indir", "Save, share and download", "Speichern, teilen und herunterladen", "Enregistrer, partager et télécharger", "حفظ ومشاركة وتنزيل"),
+  tapDetails: t("Ayrıntılar için bir durağa dokunun.", "Tap a stop to see its details.", "Für Details eine Station antippen.", "Touchez une étape pour voir les détails.", "اضغطوا على محطة لعرض التفاصيل."),
+  routeIntro: t("Gezinizi kendinize göre planlayın.", "Plan a trip that suits you.", "Planen Sie Ihre Reise ganz individuell.", "Composez un voyage à votre mesure.", "خططوا رحلة تناسبكم."),
+
   eyebrow: t("ESKİŞEHİR KEŞİF ASİSTANI", "ESKİŞEHİR DISCOVERY ASSISTANT", "ESKİŞEHİR ENTDECKEN", "ASSISTANT DÉCOUVERTE ESKİŞEHİR", "مساعد اكتشاف إسكي شهير"),
   title: t("Sizin zamanınız. Sizin Eskişehir’iniz.", "Your time. Your Eskişehir.", "Ihre Zeit. Ihr Eskişehir.", "Votre temps. Votre Eskişehir.", "وقتكم. إسكي شهير كما تحبونها."),
   lead: t("Tarihten doğaya, yerel sofralardan yeni keşiflere. Size uyan günleri birlikte planlayalım.", "From heritage and nature to local tables. Let’s shape the days around you.", "Von Kultur und Natur bis zur lokalen Küche. Gestalten Sie Ihre Tage.", "Du patrimoine à la nature et aux tables locales. Composez vos journées.", "من التراث والطبيعة إلى الموائد المحلية. لنخطط أياماً تناسبكم."),

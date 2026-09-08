@@ -66,7 +66,7 @@ export function SiteHeader() {
   const internationalLinks = [
     [copy.union, `${base}#institution`],
     [copy.city, `${base}#heritage`],
-    [copy.routes, `${base}#routes`],
+    [copy.routes, `${base}/rotani-olustur`],
     [copy.programs, `${base}#programmes`],
     [copy.charter, "/tuzuk"],
   ] as const;
@@ -116,7 +116,7 @@ export function SiteHeader() {
               </button>
               <div className="nav-dropdown language-dropdown">
                 {languages.map(([code, title, href]) => (
-                  <Link className={locale === code ? "language-active" : ""} href={href} hrefLang={code} key={code}>
+                  <Link className={locale === code ? "language-active" : ""} href={pathname.includes("/rotani-olustur") ? code === "tr" ? "/rotani-olustur" : `/${code}/rotani-olustur` : href} hrefLang={code} key={code}>
                     <strong>{title}</strong><span>{code.toUpperCase()}</span>
                   </Link>
                 ))}
@@ -144,7 +144,7 @@ export function SiteHeader() {
               </>
             ) : internationalLinks.map(([title, href]) => <Link href={href} key={title}>{title}</Link>)}
             <div className="mobile-languages" aria-label="Dil seçimi">
-              {languages.map(([code, title, href]) => <Link className={locale === code ? "active" : ""} href={href} hrefLang={code} key={code}>{title}</Link>)}
+              {languages.map(([code, title, href]) => <Link className={locale === code ? "active" : ""} href={pathname.includes("/rotani-olustur") ? code === "tr" ? "/rotani-olustur" : `/${code}/rotani-olustur` : href} hrefLang={code} key={code}>{title}</Link>)}
             </div>
           </nav>
         </div>

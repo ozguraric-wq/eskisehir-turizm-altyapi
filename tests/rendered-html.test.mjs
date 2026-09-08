@@ -43,6 +43,10 @@ test("renders charter, route and four language portals", async () => {
     ["/de", "Tourismuswirtschaft"],
     ["/fr", "économie touristique"],
     ["/ar", "اقتصاد السياحة"],
+    ["/en/rotani-olustur", "Trip preferences"],
+    ["/de/rotani-olustur", "Reisewünsche"],
+    ["/fr/rotani-olustur", "Préférences"],
+    ["/ar/rotani-olustur", "تفضيلات الرحلة"],
   ]);
 
   for (const [path, phrase] of expected) {
