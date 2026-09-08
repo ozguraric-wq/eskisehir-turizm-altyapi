@@ -1,5 +1,5 @@
-import { foodAreas, placeById, zoneNames, VERIFIED_ON } from "./data";
-import { clock, dateForDay, normalizePreferences, zoneOf } from "./engine";
+import { foodAreas, urbanZones, placeById, zoneNames, VERIFIED_ON } from "./data";
+import { clock, dateForDay, normalizePreferences, zoneOf, preferencesForDay, localTravelMode, districtDiscovery } from "./engine";
 import { copyFor } from "./copy";
 import { hospitality, HOSPITALITY_SOURCE } from "./hospitality";
 import type { DayPlan, Locale, Plan, Preferences, ScheduleItem } from "./types";
@@ -14,11 +14,13 @@ export function placeQuery(id: string, p: Preferences): string {
 }
 const travelMode = (p: Preferences) => p.mode === "walk" ? "walking" : p.mode === "bicycle" ? "bicycling" : p.mode === "transit" ? "transit" : "driving";
 export function legMapUrl(from: string, to: string, p: Preferences): string {
+  if (p.mode === "transit" && zoneOf(from) === zoneOf(to) && !urbanZones.includes(zoneOf(to))) p = { ...p, mode: "walk" };
   const query = new URLSearchParams({ api: "1", origin: placeQuery(from, p), destination: placeQuery(to, p), travelmode: travelMode(p) });
   return `https://www.google.com/maps/dir/?${query}`;
 }
 /** Three intermediate stops is the Google Maps mobile browser limit. Transit has no waypoints. */
 export function navigationSegments(day: DayPlan, p: Preferences): { url: string; from: string; to: string; stops: string[] }[] {
+  p = { ...preferencesForDay(day, p), mode: localTravelMode(day, p) };
   const points = [`origin:${p.origin}`, ...day.items.map(item => item.id)];
   const step = p.mode === "transit" ? 1 : 4;
   const segments = [];
@@ -43,7 +45,7 @@ export function itemText(item: ScheduleItem, p: Preferences, locale: Locale) {
     const stop = placeById[item.id];
     return { title: stop.name, area: stop.district, description: stop.summary[locale], note: c[stop.note], source: stop.source };
   }
-  if (item.kind === "return") return { title: c.return, area: zoneNames[p.origin], description: "", note: "", source: "" };
+  if (item.kind === "return") return { title: c.return, area: zoneNames[item.zone], description: "", note: "", source: "" };
   const packed = p.meal === "picnic" || !food;
   return { title: `${item.id.endsWith("dinner") ? c.dinner : c.lunch} · ${packed ? c.packed : food.name}`, area: zoneNames[item.zone], description: p.meal === "picnic" ? c.picnicNote : !food ? c.packedNote : food[p.meal][locale], note: packed ? "" : c.mealNote, source: food?.source ?? "" };
 }
@@ -67,11 +69,14 @@ export function calendarFile(plan: Plan, preferences: Preferences, locale: Local
   const p = normalizePreferences(preferences), c = copyFor(locale);
   if (!p.date || plan.days.some((day, i) => day.date !== dateForDay(p.date, i))) throw new Error("A dated, recalculated plan is required");
   const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ETAHB//Eskisehir Discovery//TR", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", `X-WR-CALNAME:${icsText(c.itinerary + " · Eskişehir")}`, "X-WR-TIMEZONE:Europe/Istanbul"];
-  for (const day of plan.days) for (const item of day.items) {
+  for (const day of plan.days) {
+    const dayP = preferencesForDay(day, p);
+    for (const item of day.items) {
     if (item.kind === "return" || item.end <= item.start) continue;
-    const text = itemText(item, p, locale);
-    const description = [text.description, text.note, `${c.duration}: ~${item.leg.km} km · ${item.leg.minutes} ${c.min}`, legMapUrl(item.leg.from, item.id, p), text.source, c.printNote].filter(Boolean).join("\n\n");
-    lines.push("BEGIN:VEVENT", `UID:${hash(`${plan.id}|${day.date}|${item.id}`)}@etahb.eskisehir`, `DTSTAMP:${stamp.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z")}`, `DTSTART:${calendarTime(day.date, item.start)}`, `DTEND:${calendarTime(day.date, item.end)}`, `SUMMARY:${icsText(text.title)}`, `LOCATION:${icsText(placeQuery(item.id, p))}`, `DESCRIPTION:${icsText(description)}`, `URL:${legMapUrl(item.leg.from, item.id, p)}`, "STATUS:TENTATIVE", "TRANSP:TRANSPARENT", "END:VEVENT");
+    const text = itemText(item, dayP, locale);
+    const description = [text.description, text.note, districtDiscovery(p) ? `${c.localStart}: ${zoneNames[day.origin]}. ${c.localAccess}` : "", `${c.duration}: ~${item.leg.km} km · ${item.leg.minutes} ${c.min}`, legMapUrl(item.leg.from, item.id, dayP), text.source, c.printNote].filter(Boolean).join("\n\n");
+    lines.push("BEGIN:VEVENT", `UID:${hash(`${plan.id}|${day.date}|${item.id}`)}@etahb.eskisehir`, `DTSTAMP:${stamp.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z")}`, `DTSTART:${calendarTime(day.date, item.start)}`, `DTEND:${calendarTime(day.date, item.end)}`, `SUMMARY:${icsText(text.title)}`, `LOCATION:${icsText(placeQuery(item.id, dayP))}`, `DESCRIPTION:${icsText(description)}`, `URL:${legMapUrl(item.leg.from, item.id, dayP)}`, "STATUS:TENTATIVE", "TRANSP:TRANSPARENT", "END:VEVENT");
+  }
   }
   return [...lines, "END:VCALENDAR"].map(foldCalendarLine).join("\r\n") + "\r\n";
 }
@@ -81,13 +86,14 @@ export function printDocumentHtml(plan: Plan, p: Preferences, locale: Locale, lo
   const date = (value: string) => value ? new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`)) : "—";
   const safeLogo = /^(https?:|data:image\/|file:)/.test(logoUrl) ? logoUrl : "";
   const days = plan.days.map((day, i) => {
+    const dayP = preferencesForDay(day, p);
     const districts = [...new Set(day.placeIds.map(id => placeById[id].district))];
     const hotels = districts.flatMap(d => hospitality.filter(h => h.kind === "hotel" && h.district === d).slice(0, 2));
     const rows = day.items.map(item => {
-      const text = itemText(item, p, locale);
-      return `<tr class="${item.kind}"><td class="time">${clock(item.start)}${item.end !== item.start ? `<br><span>${clock(item.end)}</span>` : ""}</td><td><div class="stop-title">${e(text.title)}</div><div class="area">${e(text.area)} · ~${item.leg.km} km · ${item.leg.minutes} ${e(c.min)}</div>${text.description ? `<p>${e(text.description)}</p>` : ""}${text.note ? `<p class="note">${e(text.note)}</p>` : ""}<div class="links"><a href="${e(legMapUrl(item.leg.from, item.id, p))}">Google Maps ↗</a>${text.source ? ` · <a href="${e(text.source)}">${e(c.source)} ↗</a>` : ""}</div></td></tr>`;
+      const text = itemText(item, dayP, locale);
+      return `<tr class="${item.kind}"><td class="time">${clock(item.start)}${item.end !== item.start ? `<br><span>${clock(item.end)}</span>` : ""}</td><td><div class="stop-title">${e(text.title)}</div><div class="area">${e(text.area)} · ~${item.leg.km} km · ${item.leg.minutes} ${e(c.min)}</div>${text.description ? `<p>${e(text.description)}</p>` : ""}${text.note ? `<p class="note">${e(text.note)}</p>` : ""}<div class="links"><a href="${e(legMapUrl(item.leg.from, item.id, dayP))}">Google Maps ↗</a>${text.source ? ` · <a href="${e(text.source)}">${e(c.source)} ↗</a>` : ""}</div></td></tr>`;
     }).join("");
-    return `<section class="day"><header>${safeLogo ? `<img src="${e(safeLogo)}" alt="">` : ""}<div><strong>Eskişehir Turizm Altyapı<br>Hizmet Birliği</strong><small>VİZYON ESKİŞEHİR 2036</small></div><span class="edition">2026<br>ESKİŞEHİR</span></header><div class="eyebrow">${e(c.itinerary)}</div><h1>${e(c.day)} ${i + 1}<span>${e(date(day.date))}</span></h1><h2>${e(districts.join(" · "))}</h2><div class="overview"><span>${e(c[p.mode])} · ${clock(p.start)}–${clock(day.finish)}</span><span>~${Math.round(day.km)} km · ${day.placeIds.length} ${e(c.stops)}</span><span>${e(c.origin)}: ${e(zoneNames[p.origin])}</span></div><p class="interests">${e(p.interests.map(key => c[key]).join(" · "))}</p><table><thead><tr><th>${e(c.timeColumn)}</th><th>${e(c.visitColumn)}</th></tr></thead><tbody>${rows}</tbody></table>${hotels.length ? `<aside><h3>${e(c.hotels)}</h3><p>${hotels.map(h => `${e(h.name)} <span>(${e(h.district)})</span>`).join(" · ")}</p><a href="${HOSPITALITY_SOURCE}">${e(c.source)} ↗</a></aside>` : ""}<footer><p>${e(c.printNote)}</p><div><span>ESKİŞEHİR · ${e(c.day)} ${i + 1} / ${plan.days.length}</span><span>${VERIFIED_ON}</span></div></footer></section>`;
+    return `<section class="day"><header>${safeLogo ? `<img src="${e(safeLogo)}" alt="">` : ""}<div><strong>Eskişehir Turizm Altyapı<br>Hizmet Birliği</strong><small>VİZYON ESKİŞEHİR 2036</small></div><span class="edition">2026<br>ESKİŞEHİR</span></header><div class="eyebrow">${e(c.itinerary)}</div><h1>${e(c.day)} ${i + 1}<span>${e(date(day.date))}</span></h1><h2>${e(districts.join(" · "))}</h2><div class="overview"><span>${e(c[p.mode])} · ${clock(p.start)}–${clock(day.finish)}</span><span>~${Math.round(day.km)} km · ${day.placeIds.length} ${e(c.stops)}</span><span>${e(c.localStart)}: ${e(zoneNames[day.origin])}</span></div>${districtDiscovery(p) ? `<p class="note">${e(c.localAccess)}${p.mode === "transit" ? ` ${e(c.localTransit)}` : ""}</p>` : ""}<p class="interests">${e(p.interests.map(key => c[key]).join(" · "))}</p><table><thead><tr><th>${e(c.timeColumn)}</th><th>${e(c.visitColumn)}</th></tr></thead><tbody>${rows}</tbody></table>${hotels.length ? `<aside><h3>${e(c.hotels)}</h3><p>${hotels.map(h => `${e(h.name)} <span>(${e(h.district)})</span>`).join(" · ")}</p><a href="${HOSPITALITY_SOURCE}">${e(c.source)} ↗</a></aside>` : ""}<footer><p>${e(c.printNote)}</p><div><span>ESKİŞEHİR · ${e(c.day)} ${i + 1} / ${plan.days.length}</span><span>${VERIFIED_ON}</span></div></footer></section>`;
   }).join("");
   return `<!doctype html><html lang="${locale}" dir="${locale === "ar" ? "rtl" : "ltr"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eskişehir · ${e(c.itinerary)}</title><style>
 @page{size:A4;margin:14mm 16mm}*{box-sizing:border-box}body{margin:0;color:#222b30;background:white;font-family:Arial,"DejaVu Sans",sans-serif;font-size:9pt;line-height:1.42}header{display:flex;align-items:center;gap:4mm;padding-bottom:4mm;border-bottom:1.5pt solid #7b122c}header img{width:13mm;height:16mm;object-fit:contain}header strong{font-family:Georgia,"DejaVu Serif",serif;font-size:12pt;line-height:1.2}header small{display:block;color:#7b122c;font-size:7pt;letter-spacing:1pt;margin-top:2mm}.edition{margin-inline-start:auto;text-align:end;font-size:7pt;letter-spacing:1pt;color:#727778}.eyebrow{font-size:8pt;color:#7b122c;margin-top:4mm;text-transform:uppercase;letter-spacing:1pt}h1{font-family:Georgia,"DejaVu Serif",serif;font-size:25pt;font-weight:400;margin:1mm 0;display:flex;justify-content:space-between;align-items:center}h1 span{font-family:Arial,"DejaVu Sans",sans-serif;font-size:10pt;font-weight:400;color:#555}h2{font-size:12pt;font-weight:500;margin:1mm 0 4mm}h3{font-size:9pt;margin:0 0 1mm}.overview{display:flex;flex-wrap:wrap;gap:2mm 6mm;padding:3mm 0;border-top:.5pt solid #ddd;border-bottom:.5pt solid #ddd;font-size:8pt}.overview span:last-child{flex-basis:100%}.interests{font-size:8pt;color:#646a6d;margin:3mm 0}table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}th{font-size:7pt;font-weight:600;text-align:start;color:#6a7072;padding:2mm 0;border-bottom:.6pt solid #aaa}th:first-child{width:20mm}td{vertical-align:top;padding:2mm 0;border-bottom:.5pt solid #e5e5e5}td.time{font-size:10pt;font-variant-numeric:tabular-nums;color:#7b122c}td.time span{font-size:8pt;color:#727778}.stop-title{font-size:10pt;font-weight:600}.area{font-size:7pt;color:#646a6d;margin:1mm 0}p{margin:1mm 0}p.note{color:#646a6d;font-size:7.5pt}.links{font-size:7pt;margin-top:1mm}a{color:#7b122c;text-decoration:none}.meal .stop-title{color:#60513e}.return td{padding-block:2mm}.return .stop-title{font-size:9pt}tr,aside,footer{break-inside:avoid;page-break-inside:avoid}aside{margin-top:4mm;border-inline-start:2pt solid #ba925c;padding-inline-start:3mm;font-size:7.5pt}aside span{color:#666}footer{margin-top:3mm;padding-top:2mm;border-top:.5pt solid #bbb;color:#646a6d;font-size:7pt}footer>div{display:flex;justify-content:space-between;margin-top:3mm;font-size:6.5pt;letter-spacing:.5pt}.day+.day{break-before:page;page-break-before:always}@media screen{body{max-width:210mm;margin:auto;padding:14mm 16mm}.day+.day{margin-top:18mm}}

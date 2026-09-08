@@ -1,6 +1,6 @@
 import { text as t, type Place, type FoodArea, type RouteTheme, type Zone, type Localized, type Interest, type District } from "./types";
 
-export const CATALOG_VERSION = "2026-09-08.2";
+export const CATALOG_VERSION = "2026-09-08.3";
 export const VERIFIED_ON = "2026-09-08";
 const ktb = (path: string) => `https://eskisehir.ktb.gov.tr/${path}`;
 const see = "https://goturkiye.com/eskisehir/see";
@@ -8,6 +8,8 @@ const cuisine = ktb("TR-156622/eskisehir39de-yemek-kulturu.html");
 const sivri = ktb("TR-362650/sivrihisar.html");
 const frig = ktb("TR-158729/frig-vadilerinde-yuruyus-rotalari.html");
 export const sources = [
+  { name: "İl Kültür ve Turizm Müdürlüğü · Bisiklet güzergâhları", url: "https://eskisehir.ktb.gov.tr/tr-158735/bisiklet.html" },
+  { name: "Yazılıkaya · İlçe başlangıçlı bisiklet gezisi", url: "https://www.eskisehir.bel.tr/icerik-detay.php?cat_icerik=1&icerik_id=12683&menu_id=24" },
   { name: "BEBKA · Eskişehir Turizm Rehberi (2018)", url: "https://www.kalkinmakutuphanesi.gov.tr/dokuman/eskisehir-turizm-rehberi/1432" },
   { name: "Kültür ve Turizm Bakanlığı · Belgeli Konaklama Tesisleri", url: "https://tga.gov.tr/kultur-ve-turizm-bakanligi-belgeli-konaklama-tesisleri" },
   { name: "İl Kültür ve Turizm Müdürlüğü · 14 ilçe", url: "https://eskisehir.ktb.gov.tr/TR-111540/ilceler.html" },
@@ -19,12 +21,12 @@ export const sources = [
 export const districtNames: District[] = ["Alpu", "Beylikova", "Çifteler", "Günyüzü", "Han", "İnönü", "Mahmudiye", "Mihalgazi", "Mihalıççık", "Odunpazarı", "Sarıcakaya", "Seyitgazi", "Sivrihisar", "Tepebaşı"];
 export const zoneNames: Record<Zone, string> = {
   center: "Eskişehir Gar / merkez", oldtown: "Odunpazarı", sazova: "Sazova", kentpark: "Kentpark", river: "Porsuk · Sümer",
-  seyit: "Seyitgazi", doganli: "Doğanlı Vadisi", midas: "Yazılıkaya", han: "Han", sivri: "Sivrihisar",
+  seyit: "Seyitgazi", doganli: "Çukurca · Doğanlı Vadisi", midas: "Yazılıkaya", han: "Han", sivri: "Sivrihisar",
   cifteler: "Çifteler", yunus: "Yunus Emre · Sarıköy", gurleyik: "Gürleyik", inonu: "İnönü",
   alpu: "Alpu", beylikova: "Beylikova", gunyuzu: "Günyüzü", kayakent: "Kayakent", mahmudiye: "Mahmudiye", mihalgazi: "Mihalgazi", ilica: "Sakarılıca", saricakaya: "Sarıcakaya", mayislar: "Mayıslar", kumbet: "Kümbet", pessinus: "Ballıhisar · Pessinus", sorkun: "Sorkun", mihaliccik: "Mihalıççık",
 };
 export const urbanZones: Zone[] = ["center", "oldtown", "sazova", "kentpark", "river"];
-export const origins: Zone[] = ["center", "oldtown", "sivri", "seyit", "midas", "cifteler", "inonu", "alpu", "beylikova", "gunyuzu", "kayakent", "mahmudiye", "mihalgazi", "ilica", "saricakaya", "han", "mihaliccik", "yunus", "gurleyik", "sorkun"];
+export const origins: Zone[] = Object.keys(zoneNames) as Zone[];
 
 // These are deliberately rounded editorial travel estimates, not a road-routing API or official kilometre measurements.
 // A sparse corridor graph prevents straight-line shortcuts across mountains. See docs/AKILLI-ROTA.md.
@@ -41,6 +43,16 @@ export const roadEdges: [Zone, Zone, number][] = [
   ["seyit", "kumbet", 36], ["kumbet", "midas", 25], ["yunus", "mihaliccik", 24], ["mihaliccik", "sorkun", 12], ["sorkun", "gurleyik", 22],
   ["center", "yunus", 98], ["yunus", "gurleyik", 75], ["center", "gurleyik", 125], ["center", "inonu", 40],
 ];
+// Editorial local-road links between sourced visitor areas, NOT GPX tracks or
+// certified cycle lanes. The public cycling guide directly supports the valley.
+// Other links reuse the local-road planning graph; riders verify access in Maps.
+const localCyclingPairs = new Set([
+  "midas|doganli", "midas|han", "sivri|pessinus", "mihaliccik|sorkun",
+  "gunyuzu|kayakent", "saricakaya|mayislar", "mihalgazi|saricakaya", "mihalgazi|ilica",
+].map(pair => pair.split("|").sort().join("|")));
+export const cyclingEdges: [Zone, Zone, number][] = roadEdges.filter(([a, b]) =>
+  urbanZones.includes(a) && urbanZones.includes(b) || localCyclingPairs.has([a, b].sort().join("|"))
+);
 function place(id: string, name: string, zone: Zone, district: District, minutes: number, interests: Interest[], summary: Localized, source: string, extra: Partial<Place> = {}): Place {
   return { id, name, zone, district, minutes, interests, summary, source, status: "existing", walking: 0.6,
     indoor: false, family: true, lowWalk: true, paid: false, note: "hours", window: [540, 1020], ...extra };
@@ -68,7 +80,7 @@ export const places: Place[] = [
   place("gerdek", "Gerdekkaya Mezar Anıtı", "doganli", "Seyitgazi", 50, ["phrygia", "heritage", "nature"], t("Doğanlı Vadisi’nde kayaya işlenen anıtsal cephe.", "A monumental rock-cut façade in Doğanlı Valley.", "Monumentale Felsfassade im Doğanlı-Tal.", "Façade monumentale taillée dans la vallée de Doğanlı.", "واجهة أثرية منحوتة في صخر وادي دوغانلي."), frig, { lowWalk: false, note: "uneven", walking: 1.2 }),
   place("hamamkaya", "Hamamkaya Frig Kaya Mezarı", "doganli", "Seyitgazi", 35, ["phrygia", "heritage"], t("Gerdekkaya yakınında kaya mezarı; dışarıdan gözlem.", "A rock tomb near Gerdekkaya, viewed from outside.", "Felsgrab nahe Gerdekkaya, von außen besichtigen.", "Tombe rupestre près de Gerdekkaya, vue extérieure.", "مقبرة صخرية قرب غيرديك كايا، مشاهدة خارجية."), ktb("TR-336956/hamamkaya-frig-kaya-mezari-daglik-frigya.html"), { lowWalk: false, note: "uneven", walking: 0.8 }),
   place("midas", "Yazılıkaya · Midas Anıtı", "midas", "Han", 100, ["phrygia", "heritage", "nature"], t("Frig yazıtları ve kayaya oyulmuş anıtsal cephe.", "Phrygian inscriptions and a monumental rock façade.", "Phrygische Inschriften und monumentale Felsfassade.", "Inscriptions phrygiennes et façade rupestre monumentale.", "نقوش فريجية وواجهة صخرية أثرية."), ktb("TR-149984/han.html"), { lowWalk: false, note: "uneven", walking: 1.5 }),
-  place("midasvillage", "Yazılıkaya Köyü", "midas", "Han", 35, ["city", "nature"], t("Arkeolojik peyzajın yanında köy dokusu ve mola.", "Village scenery beside the archaeological landscape.", "Dorfstruktur neben der archäologischen Landschaft.", "Paysage villageois près du site archéologique.", "نسيج القرية بجوار المشهد الأثري."), ktb("TR-149984/han.html")),
+  place("midasvillage", "Yazılıkaya Köyü", "midas", "Han", 35, ["phrygia", "city", "nature"], t("Arkeolojik peyzajın yanında köy dokusu ve mola.", "Village scenery beside the archaeological landscape.", "Dorfstruktur neben der archäologischen Landschaft.", "Paysage villageois près du site archéologique.", "نسيج القرية بجوار المشهد الأثري."), ktb("TR-149984/han.html")),
   place("han", "Hüsrev Paşa Camii · Han", "han", "Han", 50, ["heritage", "faith"], t("Tarihî menzil yerleşiminde Osmanlı dönemi izi.", "Ottoman heritage in a historic caravan settlement.", "Osmanisches Erbe an einer historischen Karawanenstation.", "Héritage ottoman dans une ancienne étape caravanière.", "تراث عثماني في محطة تاريخية للقوافل."), ktb("TR-149984/han.html"), { note: "worship" }),
   place("ulucami", "Sivrihisar Ulu Camii", "sivri", "Sivrihisar", 65, ["heritage", "faith"], t("UNESCO seri miras alanındaki ahşap direkli cami.", "A timber-columned mosque in a UNESCO serial property.", "Holzsäulenmoschee einer seriellen UNESCO-Welterbestätte.", "Mosquée à colonnes de bois d’un bien UNESCO en série.", "مسجد بأعمدة خشبية ضمن موقع تراث عالمي متسلسل لليونسكو."), "https://whc.unesco.org/en/list/1694/", { note: "worship", indoor: true }),
   place("sivricarsi", "Sivrihisar Tarihî Çarşısı", "sivri", "Sivrihisar", 55, ["craft", "taste", "heritage"], t("Yerel lezzetler, geleneksel doku ve esnafla buluşma.", "Local flavours, historic streets and shopkeepers.", "Lokale Küche, historische Gassen und Händler.", "Saveurs locales, rues anciennes et commerçants.", "نكهات محلية وشوارع تاريخية وتجار البلدة."), sivri),

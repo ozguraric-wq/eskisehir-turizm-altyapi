@@ -392,7 +392,7 @@ img { max-width: 100%; }
   .nav-link, .nav-trigger { padding-inline: .48rem; font-size: .75rem; }
 }
 
-@media (max-width: 1119px) {
+@media (max-width: 1023px) {
   .desktop-nav, .header-cta { display: none; }
   .mobile-menu-button { display: inline-flex; }
   .mobile-panel.open {
@@ -1201,3 +1201,30 @@ img { max-width: 100%; }
  .rp-facility-list li { align-items: flex-start; flex-direction: column; gap: 2px; }
  .rp-calendar-help { padding-inline: 16px; }
 }
+
+/* A laptop-width viewport always retains the normal navigation. */
+@media (min-width: 1024px) {
+  .site-header .desktop-nav { display: flex; flex: 0 1 auto; flex-wrap: nowrap; white-space: nowrap; }
+  .site-header .mobile-menu-button, .site-header .mobile-panel { display: none; }
+  .header-shell { gap: 18px; }
+  .brand-lockup { min-width: 0; flex: 0 0 270px; }
+  .nav-link, .nav-trigger { min-height: 44px; font-size: .875rem; padding-inline: .7rem; }
+  .nav-dropdown { white-space: normal; }
+}
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .header-shell { width: calc(100% - 32px); gap: 12px; }
+  .brand-lockup { flex-basis: 254px; gap: 9px; }
+  .brand-title { max-width: 190px; font-size: .875rem; }
+  .brand-lockup img { width: 48px; height: 54px; }
+  .nav-link, .nav-trigger { padding-inline: .5rem; }
+}
+.rp-start-scope .rp-segment { grid-template-columns: 1fr 1fr; }
+.rp-start-scope .rp-segment button { white-space: normal; line-height: 1.4; min-height: 54px; }
+.rp-start-scope p.rp-field-help { margin-top: 10px; }
+.rp-day-start { padding: 18px 24px; background: #f7f4ee; border-bottom: 1px solid #e3d9cc; }
+.rp-day-start > div { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 9px; }
+.rp-day-start strong { font-size: 15px; }
+.rp-day-start span { flex-basis: 100%; font-size: 12px; color: #626b65; }
+.rp-day-start p { margin: 9px 0 0; font-size: 13px; color: #526056; line-height: 1.6; }
+.rp-day-start a { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; margin-top: 3px; color: var(--burgundy); font-size: 13px; font-weight: 650; }
+@media(max-width:760px) { .rp-day-start { padding: 14px 16px; } }

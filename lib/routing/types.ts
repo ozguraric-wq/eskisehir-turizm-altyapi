@@ -23,6 +23,7 @@ export interface FoodArea { zone: Zone; name: string; local: Localized; vegetari
 export interface RouteTheme { id: string; name: Localized; stops: string[]; interests: Interest[]; }
 export interface Preferences {
   days: number; start: number; end: number; mode: Mode; pace: Pace;
+  startMode: "district" | "fixed"; cycleKm: 25 | 50 | 80;
   interests: Interest[]; origin: Zone; meal: MealStyle; family: boolean;
   lowWalk: boolean; weather: Weather; freeOnly: boolean; date: string;
   excluded: string[]; focus: string; alternatives: number; districts: District[];
@@ -33,7 +34,7 @@ export interface ScheduleItem {
   start: number; end: number; leg: Leg; wait: number;
 }
 export interface DayPlan {
-  date: string; theme: string; items: ScheduleItem[]; placeIds: string[];
+  date: string; theme: string; origin: Zone; items: ScheduleItem[]; placeIds: string[];
   km: number; travel: number; walking: number; finish: number; score: number;
 }
 export interface Plan { id: string; days: DayPlan[]; score: number; covered: Interest[]; }
