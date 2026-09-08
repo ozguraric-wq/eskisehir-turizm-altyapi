@@ -883,6 +883,12 @@ img { max-width: 100%; }
 .rp-data-note > div { display: grid; gap: 10px; }
 .rp-data-note a { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--burgundy); }
 .rp-demo-disclosure { font-size: 14px; line-height: 1.8; color: #697468; margin: 20px 0 0; }
+.rp-demo-notice { display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px; margin-bottom: 16px; border: 1px solid #dfd6c6; border-inline-start: 3px solid #b68b51; border-radius: 10px; background: #faf7ef; }
+.rp-demo-notice > svg { flex-shrink: 0; color: #80613a; margin-top: 2px; }
+.rp-demo-notice > div { min-width: 0; }
+.rp-demo-notice strong { display: block; font-size: 14px; line-height: 1.5; color: #39463e; font-weight: 650; }
+.rp-demo-notice p { margin: 5px 0 0; font-size: 13px; line-height: 1.7; color: #59645c; }
+@media(max-width:760px) { .rp-demo-notice { gap: 10px; padding: 13px; margin-bottom: 13px; } .rp-demo-notice p { line-height: 1.65; } }
 [dir=rtl].route-planner-v2 { font-family: Tahoma, Arial, sans-serif; }
 [dir=rtl] :is(.rp-prompt-form, .rp-theme-grid) svg:last-child { transform: scaleX(-1); }
 @media (max-width: 1000px) {

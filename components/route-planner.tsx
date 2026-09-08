@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Bike, Bookmark, CalendarPlus, Check, ChevronDown, Clock3, Compass, Download, ExternalLink, Footprints, MapPin, Navigation, Printer, Route, Share2, SlidersHorizontal, Sparkles, TrainFront, Trash2, Utensils, Car, Motorbike as Motorcycle } from "lucide-react";
+import { ArrowRight, Bike, Bookmark, CalendarPlus, Check, ChevronDown, Clock3, Compass, Download, ExternalLink, Footprints, Info, MapPin, Navigation, Printer, Route, Share2, SlidersHorizontal, Sparkles, TrainFront, Trash2, Utensils, Car, Motorbike as Motorcycle } from "lucide-react";
 import { CATALOG_VERSION, districtNames, foodAreas, origins, placeById, places, sources, themeById, themes, urbanZones, zoneNames } from "@/lib/routing/data";
 import { clock, decodePreferences, defaults, encodePreferences, generatePlans, mapSearch, normalizePreferences, parseRequest, districtDiscovery, preferencesForDay, cyclingLimit } from "@/lib/routing/engine";
 import { siteAsset } from "@/lib/site-path";
@@ -158,6 +158,10 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
 
   return (
     <div className="route-planner-v2" lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
+      <div className="rp-demo-notice rp-no-print" role="note" aria-labelledby={`route-demo-${locale}`}>
+        <Info size={19} aria-hidden="true" />
+        <div><strong id={`route-demo-${locale}`}>{c.demoTitle}</strong><p>{c.demoExplanation}</p></div>
+      </div>
       <details className="rp-assistant rp-no-print">
         <summary><Sparkles size={19} aria-hidden="true" /><span>{c.writePreferences}</span><ChevronDown size={18} aria-hidden="true" /></summary>
         <div className="rp-assistant-content"><p>{c.parserNote}</p><form onSubmit={e => { e.preventDefault(); interpret(); }} className="rp-prompt-form"><label className="sr-only" htmlFor={`route-request-${locale}`}>{c.prompt}</label><input id={`route-request-${locale}`} value={request} onChange={e => setRequest(e.target.value)} placeholder={c.placeholder} maxLength={600} /><button type="submit" disabled={!request.trim()}>{c.interpret}<ArrowRight size={18} aria-hidden="true" /></button></form>{notice && <p role="status">{notice}</p>}</div>
