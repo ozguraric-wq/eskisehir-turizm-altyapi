@@ -39,6 +39,7 @@ const trGroups = [
     label: "Eskişehir",
     href: "/ilceler",
     items: [
+      ["Etkinlikler", "/etkinlikler", "Kurumların takvimi ve etkinlikli gezi planları"],
       ["14 İlçe", "/ilceler", "Her ilçeye özgü turizm rolü"],
       ["Tarih ve Frigya", "/ilceler#miras", "Yazılıkaya'dan UNESCO Sivrihisar'a"],
       ["Resmî Kaynaklar", "/ilceler#kaynaklar", "Ziyaret öncesi doğrulama bağlantıları"],
@@ -59,6 +60,7 @@ export function SiteHeader() {
   const base = locale === "tr" ? "" : `/${locale}`;
   const discoveryLabel = heritageCopy(locale).menu;
   const languageHref = (code: typeof locale, fallback: string) => {
+    if (pathname.includes("/etkinlikler")) return `${code === "tr" ? "" : `/${code}`}/etkinlikler`;
     if (pathname.includes("/lezzet-ve-miras")) return heritagePath(code);
     if (pathname.includes("/qr")) return `${code === "tr" ? "" : `/${code}`}/qr`;
     if (pathname.includes("/gezilerim")) return `${code === "tr" ? "" : `/${code}`}/gezilerim`;
@@ -80,7 +82,7 @@ export function SiteHeader() {
 
   const internationalLinks = [
     [copy.union, `${base}#institution`],
-    [copy.city, `${base}#heritage`],
+    [({en:"Events",de:"Veranstaltungen",fr:"Événements",ar:"الفعاليات",tr:"Etkinlikler"})[locale], `${base}/etkinlikler`],
     [discoveryLabel, heritagePath(locale)],
     [copy.routes, `${base}/rotani-olustur`],
     [copy.programs, `${base}#programmes`],

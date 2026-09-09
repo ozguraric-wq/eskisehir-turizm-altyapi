@@ -30,6 +30,9 @@ export interface Preferences {
   excluded: string[]; focus: string; alternatives: number; districts: District[];
   /** Explicit must-see stops. A returned itinerary must include every one. */
   required?: string[];
+  /** Official occurrence IDs, resolved against the trusted catalogue. */
+  events?: string[];
+  eventDurations?: Record<string,number>;
 }
 export interface TransitRide {
   line: string; vehicle: "bus" | "tram"; direction: string;
@@ -40,13 +43,14 @@ export interface TransitRide {
 export interface TransitJourney { rides: TransitRide[]; walkingMinutes: number; walkingKm: number; waitingMinutes: number; }
 export interface Leg { from: string; to: string; km: number; minutes: number; rest: number; transit?: TransitJourney; walkingKm?: number; }
 export interface ScheduleItem {
-  kind: "visit" | "meal" | "return"; id: string; zone: Zone;
+  kind: "visit" | "meal" | "return" | "event"; id: string; zone: Zone;
   start: number; end: number; leg: Leg; wait: number;
+  event?: import('../events/types').CityEvent; arrivalBy?: number; estimatedEnd?: boolean;
 }
 export interface DayPlan {
   date: string; theme: string; origin: Zone; start: number; items: ScheduleItem[]; placeIds: string[];
   km: number; travel: number; walking: number; finish: number; score: number;
 }
 export interface Plan { id: string; days: DayPlan[]; score: number; covered: Interest[]; }
-export interface PlanningResult { plans: Plan[]; eligible: number; evaluated: number; requestedDays: number; unavailableDistricts: District[]; }
+export interface PlanningResult { plans: Plan[]; eligible: number; evaluated: number; requestedDays: number; unavailableDistricts: District[]; eventIssues?: import('../events/types').EventIssue[]; }
 export interface Hospitality { id: string; name: string; district: District; kind: "hotel" | "restaurant"; category: string; certificate: string; certificateType: string; }

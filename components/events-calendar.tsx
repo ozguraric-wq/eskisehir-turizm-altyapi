@@ -1,0 +1,73 @@
+'use client';
+import {useEffect,useState} from 'react';
+import Link from 'next/link';
+import {CalendarDays,CalendarPlus,ChevronRight,Clock3,ExternalLink,MapPin,RefreshCw,Search,Ticket,Trash2,Check,ArrowUpRight} from 'lucide-react';
+import {Sheet,SheetContent,SheetTitle,SheetDescription} from './ui/sheet';
+import {eventCopy,categoryLabels,eventIssueText} from '@/lib/events/copy';
+import {useEvents} from '@/lib/events/client';
+import {eventSources} from '@/lib/events/sources';
+import {basicEventIssue,minutesOf,turkeyToday,validateEventSelection} from '@/lib/events/catalog';
+import {venueById} from '@/lib/events/venues';
+import {districtNames} from '@/lib/routing/data';
+import {clock,defaults,normalizePreferences,dateForDay,decodePreferences,encodePreferences} from '@/lib/routing/engine';
+import {plannerHref} from '@/lib/qr/links';
+import type {CityEvent,EventCatalog,EventCategory} from '@/lib/events/types';
+import type {Locale,Preferences} from '@/lib/routing/types';
+const dateLabel=(date:string,locale:Locale)=>new Intl.DateTimeFormat(locale,{day:'numeric',month:'short',year:'numeric',timeZone:'Europe/Istanbul'}).format(new Date(date+'T12:00:00Z'));
+export function EventHomeLink({locale}:{locale:Locale}){const c=eventCopy(locale);return <Link className="ev-home" href={`${locale==='tr'?'':`/${locale}`}/etkinlikler`}><span className="ev-home-icon"><CalendarDays size={24}/></span><span><strong>{c.title}</strong><small>{c.hint}</small></span><ArrowUpRight size={20}/></Link>;}
+
+function EventDetails({event,locale,selected,duration,onDuration,onToggle}:{event:CityEvent|null;locale:Locale;selected:boolean;duration:number;onDuration:(n:number)=>void;onToggle:()=>void}){
+ const c=eventCopy(locale),labels=categoryLabels(locale);if(!event)return null;const issue=basicEventIssue(event),venue=event.venueId?venueById[event.venueId]:null;
+ return <><span className="ev-kicker">{labels[event.category]}</span><SheetTitle className="ev-detail-title">{event.title}</SheetTitle><SheetDescription>{event.organizer}</SheetDescription>
+ <div className="ev-facts"><p><CalendarDays size={19}/>{event.date?dateLabel(event.date,locale):c.timePending}</p><p><Clock3 size={19}/>{event.time??c.timePending}{event.endTime?`–${event.endTime}`:''}</p><p><MapPin size={19}/>{event.venue||c.timePending}</p><p><Ticket size={19}/>{c[event.price]}</p></div>
+ {locale==='tr'&&event.summary&&<p className="ev-description">{event.summary}</p>}
+ {issue&&<p className="ev-notice" role="status">{eventIssueText(issue,locale)}</p>}
+ {!issue&&<div className="ev-booking"><h3>{c.routing}</h3><p>{c.routingHint}</p>{!event.endTime&&<label>{c.allowance}<select value={duration} onChange={e=>onDuration(Number(e.target.value))}>{[45,60,90,120,180,240,360].map(n=><option value={n} key={n}>{n} min</option>)}</select><small>{c.estimate}</small></label>}<button type="button" className="ev-primary" onClick={onToggle}>{selected?<Check size={19}/>:<CalendarPlus size={19}/>} {selected?c.remove:c.add}</button></div>}
+ <div className="ev-source-actions"><a href={event.sourceUrl} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={16}/></a>{venue&&<a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.query)}`} target="_blank" rel="noreferrer">{event.venue}<MapPin size={16}/></a>}</div><small className="ev-checked">{c.checked}: {dateLabel(event.checkedAt.slice(0,10),locale)}</small>
+ </>;
+}
+
+export function EventsCalendar({locale='tr'}:{locale?:Locale}){
+ const c=eventCopy(locale),categories=categoryLabels(locale),{catalog,loading,failed,refresh}=useEvents();
+ const [period,setPeriod]=useState('upcoming'),[query,setQuery]=useState(''),[district,setDistrict]=useState(''),[category,setCategory]=useState(''),[date,setDate]=useState(''),[limit,setLimit]=useState(12),[detail,setDetail]=useState<string|null>(null),[base,setBase]=useState<Preferences>(normalizePreferences(defaults)),[ids,setIds]=useState<string[]>([]),[durations,setDurations]=useState<Record<string,number>>({}),[message,setMessage]=useState('');
+ useEffect(()=>{try{const encoded=new URLSearchParams(location.hash.slice(1)).get('route');if(encoded){const p=decodePreferences(encoded);if(p){setBase(p);setIds(p.events??[]);setDurations(p.eventDurations??{});}}}catch{}},[]);
+ const [today,setToday]=useState('2026-09-09');useEffect(()=>setToday(turkeyToday()),[]);
+ const weekEnd=dateForDay(today,6),active=catalog.events.find(e=>e.id===detail)??null;
+ const events=catalog.events.filter(e=>{
+  if(date&&e.date!==date)return false;if(district&&e.district!==district)return false;if(category&&e.category!==category)return false;
+  if(query&&!`${e.title} ${e.venue} ${e.organizer}`.toLocaleLowerCase(locale).includes(query.toLocaleLowerCase(locale)))return false;
+  return period==='announced'?e.status==='announced'||!e.date:period==='archive'?!!e.date&&e.date<today:!!e.date&&e.status!=='announced'&&(period==='today'?e.date===today:period==='week'?e.date>=today&&e.date<=weekEnd:e.date>=today);
+ });
+ const selected=ids.flatMap(id=>{const e=catalog.events.find(e=>e.id===id);return e?[e]:[];}),dates=selected.flatMap(e=>e.date?[e.date]:[]).sort(),span=dates.length?Math.round((Date.parse(dates.at(-1)!)-Date.parse(dates[0]))/86400000)+1:1;
+ const proposal=normalizePreferences({...base,events:ids,eventDurations:durations,date:dates[0]??base.date,days:span,end:Math.max(base.end,...selected.filter(e=>e.time).map(e=>minutesOf(e.time!)+(e.endTime?minutesOf(e.endTime)-minutesOf(e.time!):durations[e.id]??120)+60))});
+ const issues=span>4?[]:validateEventSelection(proposal,catalog.events);
+ function toggle(e:CityEvent){setMessage('');if(ids.includes(e.id)){setIds(ids.filter(id=>id!==e.id));return;}if(ids.length>=8||selected.filter(x=>x.date===e.date).length>=2){setMessage(eventIssueText('limit',locale));return;}setIds([...ids,e.id]);if(!durations[e.id])setDurations({...durations,[e.id]:120});}
+ function filter(action:()=>void){action();setLimit(12);}
+ return <main id="ana-icerik" className="ev-page site-shell" lang={locale} dir={locale==='ar'?'rtl':'ltr'}>
+ <header className="ev-header"><div><span className="ev-kicker">ESKİŞEHİR · {c.menu}</span><h1>{c.title}</h1><p>{c.intro}</p></div><CalendarDays className="ev-header-mark" size={52} strokeWidth={1.2}/></header>
+ <div className="ev-periods" role="group" aria-label={c.date}>{(['upcoming','today','week','announced','archive'] as const).map(p=><button type="button" key={p} onClick={()=>filter(()=>setPeriod(p))} aria-pressed={period===p}>{c[p]}</button>)}</div>
+ <div className="ev-toolbar"><label className="ev-search"><span className="sr-only">{c.search}</span><Search size={19}/><input type="search" value={query} onChange={e=>filter(()=>setQuery(e.target.value))} placeholder={c.search} maxLength={100}/></label><label>{c.date}<input type="date" value={date} onChange={e=>filter(()=>setDate(e.target.value))}/></label><label>{c.district}<select value={district} onChange={e=>filter(()=>setDistrict(e.target.value))}><option value="">{c.all} · 14</option>{districtNames.map(d=><option key={d}>{d}</option>)}</select></label><label>{c.category}<select value={category} onChange={e=>filter(()=>setCategory(e.target.value))}><option value="">{c.all}</option>{Object.entries(categories).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label></div>
+ <div className="ev-result-bar"><span aria-live="polite">{events.length} {c.menu.toLocaleLowerCase(locale)}</span><button type="button" onClick={refresh} disabled={loading}><RefreshCw size={16} className={loading?'ev-spin':''}/>{loading?c.loading:c.refresh}</button></div>
+ {failed&&<p className="ev-notice" role="status">{c.offline}</p>}
+ <div className="ev-layout"><section aria-label={c.menu}><div className="ev-grid">{events.slice(0,limit).map(e=>{const chosen=ids.includes(e.id),status=e.status==='cancelled'||e.status==='postponed'?c[e.status]:null;return <article className={`ev-card ${chosen?'is-selected':''}`} key={e.id}><div className="ev-card-top"><span className="ev-date-tile">{e.date?<><strong>{e.date.slice(8)}</strong><small>{new Intl.DateTimeFormat(locale,{month:'short'}).format(new Date(e.date+'T12:00:00'))}</small></>:<CalendarDays size={27}/>}</span><span className="ev-category">{categories[e.category]}</span>{chosen&&<Check size={18} aria-label={c.added}/>}</div><h2><button type="button" onClick={()=>setDetail(e.id)}>{e.title}</button></h2><p className="ev-card-meta"><Clock3 size={15}/>{e.time??c.timePending}<span>·</span>{e.district??'Eskişehir'}</p><p className="ev-card-venue"><MapPin size={15}/>{e.venue||c.timePending}</p>{status&&<p className="ev-status">{status}</p>}<footer><small>{e.organizer}</small><button type="button" onClick={()=>setDetail(e.id)} aria-label={`${c.details}: ${e.title}`}><ChevronRight size={19}/></button></footer></article>;})}</div>
+ {!events.length&&<div className="ev-empty"><CalendarDays size={38} strokeWidth={1.3}/><h2>{c.empty}</h2><p>{c.emptyHint}</p><button type="button" onClick={()=>{setDate('');setDistrict('');setCategory('');setQuery('');setPeriod('upcoming');}}>{c.clear}</button></div>}
+ {events.length>limit&&<button type="button" className="ev-more" onClick={()=>setLimit(limit+12)}>{c.more}</button>}
+ </section>
+ <aside id="event-selection" className="ev-basket" aria-label={c.selection}><div className="ev-basket-heading"><CalendarPlus size={21}/><h2>{c.selection}</h2><span>{ids.length}</span></div><p>{c.selectedHint}</p>{ids.map(id=>{const e=catalog.events.find(e=>e.id===id);return <div className="ev-selected" key={id}><button type="button" onClick={()=>setDetail(id)}><strong>{e?.title??id}</strong><small>{e?.date} · {e?.time}</small></button><button type="button" onClick={()=>setIds(ids.filter(x=>x!==id))} aria-label={`${c.remove}: ${e?.title??id}`}><Trash2 size={17}/></button></div>;})}
+ {ids.length>0&&<><p className="ev-proposed-dates">{proposal.date&&dateLabel(proposal.date,locale)}{span>1?` → ${dates.at(-1)}`:''}<br/>{clock(proposal.start)}–{clock(proposal.end)}</p>{span>4&&<p role="status" className="ev-notice">{c.limits}</p>}{issues.map((issue,i)=><p className="ev-notice" key={i}>{eventIssueText(issue.code,locale)}</p>)}{span<=4&&!issues.length?<Link className="ev-primary" href={plannerHref(proposal,locale)}>{c.plan}<ChevronRight size={18}/></Link>:span<=4?<Link href={plannerHref(proposal,locale)}>{c.choose}<ChevronRight size={16}/></Link>:null}</>}
+ {message&&<p role="status">{message}</p>}<small>{c.routingHint}</small></aside></div>
+ {ids.length>0&&<div className="ev-mobile-selection"><span><strong>{ids.length} {c.menu.toLocaleLowerCase(locale)}</strong><small>{c.added}</small></span><button type="button" onClick={()=>document.getElementById('event-selection')?.scrollIntoView({behavior:'smooth',block:'center'})}>{c.selection}<ChevronRight size={17}/></button></div>}
+ <details className="ev-coverage"><summary>{c.sources}<span>{eventSources.length}</span></summary><p>{c.coverage}</p><p>{c.sourceRefresh}</p><div className="ev-source-grid">{eventSources.filter(s=>!district||s.district===district||!s.district).map(s=>{const feed=catalog.sources.find(f=>f.sourceId===s.id);return <a key={s.id} href={s.url} target="_blank" rel="noreferrer"><strong>{s.name}<ExternalLink size={14}/></strong><span>{feed?.state==='connected'?c.connected:feed?.state==='unavailable'?c.unavailable:feed?.state==='no-structured-events'?c.unstructured:c.pending}</span>{feed?.checkedAt&&<small>{c.checked}: {dateLabel(feed.checkedAt.slice(0,10),locale)}</small>}</a>;})}</div></details><p className="ev-language-note">{c.sourceNote}</p>
+ <Sheet open={!!active} onOpenChange={v=>{if(!v)setDetail(null);}}><SheetContent className="ev-sheet" side={locale==='ar'?'left':'right'}><EventDetails event={active} locale={locale} selected={!!active&&ids.includes(active.id)} duration={active?durations[active.id]??120:120} onDuration={n=>{if(active)setDurations({...durations,[active.id]:n});}} onToggle={()=>{if(active)toggle(active);}}/>{active&&ids.includes(active.id)&&span<=4&&!issues.length&&<Link className="ev-primary" href={plannerHref(proposal,locale)}>{c.plan}<ChevronRight size={18}/></Link>}{message&&<p role="status">{message}</p>}</SheetContent></Sheet>
+ </main>;
+}
+
+/** Optional compact picker in the route form; changing it never silently moves the trip dates. */
+export function RouteEventPicker({locale,p,onChange,catalog}:{locale:Locale;p:Preferences;onChange:(p:Preferences)=>void;catalog:EventCatalog}){
+ const c=eventCopy(locale),[open,setOpen]=useState(false);const selected=p.events??[];
+ const available=catalog.events.filter(e=>e.date&&p.date&&e.date>=p.date&&e.date<=dateForDay(p.date,p.days-1)&&!basicEventIssue(e));
+ return <div className="ev-route-picker"><button type="button" onClick={()=>setOpen(true)}><CalendarDays size={20}/><span><strong>{c.choose}</strong><small>{selected.length?`${selected.length} · ${c.added}`:c.hint}</small></span><ChevronRight size={18}/></button>
+ <Sheet open={open} onOpenChange={setOpen}><SheetContent className="ev-sheet" side={locale==='ar'?'left':'right'}><SheetTitle>{c.choose}</SheetTitle><SheetDescription>{c.routingHint}</SheetDescription>{!p.date&&<p>{c.pickDate}</p>}
+ {[...new Set([...selected,...available.map(e=>e.id)])].map(id=>{const e=catalog.events.find(e=>e.id===id),checked=selected.includes(id);return <div className="ev-picker-item" key={id}><label><input type="checkbox" checked={checked} disabled={!checked&&selected.length>=8} onChange={()=>onChange(normalizePreferences({...p,events:checked?selected.filter(x=>x!==id):[...selected,id],eventDurations:{...p.eventDurations,[id]:p.eventDurations?.[id]??120}}))}/><span><strong>{e?.title??id}</strong><small>{e?.date} · {e?.time} · {e?.venue}</small></span></label>{checked&&e&&!e.endTime&&<label className="ev-picker-duration">{c.allowance}<select value={p.eventDurations?.[id]??120} onChange={t=>onChange(normalizePreferences({...p,eventDurations:{...p.eventDurations,[id]:Number(t.target.value)}}))}>{[45,60,90,120,180,240,360].map(n=><option key={n} value={n}>{n} min</option>)}</select><small>{c.estimate}</small></label>}</div>;})}
+ {p.date&&!available.length&&<p>{c.empty}</p>}{validateEventSelection(p,catalog.events).map((issue,i)=><p className="ev-notice" key={i}>{eventIssueText(issue.code,locale)}</p>)}<Link className="ev-source-actions" href={`${locale==='tr'?'':`/${locale}`}/etkinlikler#route=${encodePreferences(p)}`}>{c.browse}<ExternalLink size={17}/></Link><button type="button" className="ev-primary" onClick={()=>setOpen(false)}>{c.added}<Check size={18}/></button></SheetContent></Sheet></div>;
+}

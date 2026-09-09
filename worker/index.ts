@@ -3,6 +3,7 @@ import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } fr
 import handler from "vinext/server/app-router-entry";
 import { handleAssistantApi } from "../lib/mobile/assistant-server";
 
+import {handleEventApi} from '../lib/events/server';
 import {handleSocialApi} from "../lib/social/server";
 import type {SocialEnv} from "../lib/social/server-contract";
 
@@ -38,6 +39,7 @@ interface ExecutionContext {
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    if(new URL(request.url).pathname.startsWith('/api/events'))return handleEventApi(request,env,ctx);
     if (new URL(request.url).pathname.startsWith("/api/community/")) return handleSocialApi(request, env, "sites");
     if (new URL(request.url).pathname.startsWith("/api/mobile/")) return handleAssistantApi(request, env);
     const authResponse = await handleAccessGate(request, env);

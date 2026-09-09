@@ -1,3 +1,5 @@
+import {eventSchema} from '../events/catalog';
+import {eventStopId} from '../events/venues';
 import { CATALOG_VERSION, placeById } from "../routing/data";
 import { normalizePreferences, generatePlans } from "../routing/engine";
 import type { Plan, Preferences } from "../routing/types";
@@ -14,7 +16,7 @@ export function validTrip(value: unknown): value is Trip {
     && !!t.plan && Array.isArray(t.plan.days) && t.plan.days.length>0 && t.plan.days.length<=4
     && t.plan.days.every(d=>Array.isArray(d.placeIds) && d.placeIds.every(id=>Object.hasOwn(placeById,id))
       && Array.isArray(d.items) && d.items.every(item=>Number.isFinite(item.start) && Number.isFinite(item.end)
-        && ["visit","meal","return"].includes(item.kind) && (item.kind!=="visit" || Object.hasOwn(placeById,item.id))));
+        && ["visit","meal","return","event"].includes(item.kind) && (item.kind!=="visit" || Object.hasOwn(placeById,item.id)) && (item.kind!=="event" || eventSchema.safeParse(item.event).success && item.id===eventStopId(item.event!))));
 }
 export function readTrips(): Trip[] {
   if (typeof localStorage==="undefined") return [];

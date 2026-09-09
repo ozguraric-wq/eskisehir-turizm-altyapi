@@ -4,15 +4,12 @@ import { readFile, writeFile, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import ts from "typescript";
+import {build} from "esbuild";
 
 // Exercise the actual UI engine without a browser or another runtime dependency.
 const directory = await mkdtemp(join(tmpdir(), "etahb-routing-"));
-for (const module of ["types", "data", "engine", "copy", "hospitality", "exports", "transit-data", "transit", "transit-copy", "heritage-registry", "heritage-data", "heritage-copy", "heritage"]) {
-  const source = await readFile(new URL(`../lib/routing/${module}.ts`, import.meta.url), "utf8");
-  const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText.replace(/from "\.\/(types|data|engine|copy|hospitality|exports|transit-data|transit|transit-copy|heritage-registry|heritage-data|heritage-copy|heritage)"/g, 'from "./$1.mjs"');
-  await writeFile(join(directory, `${module}.mjs`), js);
-}
+await build({entryPoints:["types", "data", "engine", "copy", "hospitality", "exports", "transit-data", "transit", "transit-copy", "heritage-registry", "heritage-data", "heritage-copy", "heritage"].map(module=>new URL(`../lib/routing/${module}.ts`,import.meta.url).pathname),outdir:directory,outExtension:{'.js':'.mjs'},bundle:true,splitting:true,platform:'node',format:'esm',logLevel:'silent'});
+
 const { generatePlans, normalizePreferences, schedule, estimateLeg, defaults, encodePreferences, decodePreferences, parseRequest, dateForDay, directions, districtDiscovery, cyclingLimit, preferencesForDay, localTravelMode, timedLeg } = await import(pathToFileURL(join(directory, "engine.mjs")));
 const { places, placeById, themes, urbanZones, foodAreas, zoneNames } = await import(pathToFileURL(join(directory, "data.mjs")));
 const { copyFor } = await import(pathToFileURL(join(directory, "copy.mjs")));
@@ -227,7 +224,7 @@ test("shared and saved preferences validate IDs, dates and numeric limits", () =
   assert.equal(decodePreferences("a".repeat(12001)), null);
   const untrusted = normalizePreferences({ days: Infinity, start: -500, end: 99999, origin: "missing", mode: "helicopter", excluded: ["constructor", "porsuk"], interests: [], focus: "__proto__", date: "2026-02-31" });
   assert.equal(untrusted.days, 2); assert.equal(untrusted.date, ""); assert.equal(untrusted.focus, "");
-  assert.deepEqual(untrusted.excluded, ["porsuk"]); assert.equal(untrusted.end, 1140);
+  assert.deepEqual(untrusted.excluded, ["porsuk"]); assert.equal(untrusted.end, 1410);
 });
 
 test("five-language preference parser and all user-facing catalogue translations", () => {

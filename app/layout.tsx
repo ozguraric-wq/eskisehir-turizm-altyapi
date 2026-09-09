@@ -7,6 +7,7 @@ import "./globals.css";
 import "./mobile.css";
 import "./qr.css";
 import "./social.css";
+import "./events.css";
 import { SocialProvider } from "@/components/social-provider";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";

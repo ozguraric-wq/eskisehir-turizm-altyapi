@@ -3,11 +3,11 @@ import test,{after} from "node:test";
 import {readFile,writeFile,mkdir,readdir,mkdtemp,rm} from "node:fs/promises";
 import {join,resolve} from "node:path";
 import {pathToFileURL} from "node:url";
-import ts from "typescript";
+import {build} from "esbuild";
 
 await mkdir("work",{recursive:true});
 const dir=await mkdtemp(resolve("work/mobile-tests-"));
-for(const folder of ["routing","mobile"]){await mkdir(join(dir,folder));for(const file of await readdir(`lib/${folder}`)){if(!file.endsWith(".ts"))continue;const source=await readFile(`lib/${folder}/${file}`,"utf8");const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText.replace(/(from\s+["'])(\.[^"']+)(["'])/g,"$1$2.mjs$3");await writeFile(join(dir,folder,file.replace(/\.ts$/,".mjs")),js);}}
+await build({entryPoints:['routing/engine','routing/data','mobile/assistant-server','mobile/trips'].map(file=>`lib/${file}.ts`),outbase:'lib',outdir:dir,outExtension:{'.js':'.mjs'},bundle:true,splitting:true,platform:'node',format:'esm',logLevel:'silent'});
 after(()=>rm(dir,{recursive:true,force:true}));
 const {defaults,normalizePreferences,generatePlans}=await import(pathToFileURL(join(dir,"routing/engine.mjs")));
 const {CATALOG_VERSION}=await import(pathToFileURL(join(dir,"routing/data.mjs")));

@@ -15,6 +15,7 @@ import { places,placeById,themeById,districtNames,VERIFIED_ON } from "@/lib/rout
 import { heritage,products } from "@/lib/routing/heritage-data";
 import { heritageCopy } from "@/lib/routing/heritage-copy";
 import { copyFor } from "@/lib/routing/copy";
+import {useEvents} from "@/lib/events/client";
 import { generatePlans,clock } from "@/lib/routing/engine";
 import { searchKey } from "@/lib/routing/heritage";
 import { isNativeApp } from "@/lib/mobile/native";
@@ -37,7 +38,8 @@ export function QrGuide({locale="tr"}:{locale?:Locale}){
   const entry=target?.kind==="entry"?target.entry:null,place=entry?.kind==="place"?placeById[entry.id]:null,theme=entry?.kind==="theme"?themeById[entry.id]:null;
   const related=place?heritage.filter(h=>h.stopIds?.includes(place.id)):[];
   const localProducts=place?products.filter(p=>p.zones.includes(place.zone)).slice(0,3):[];
-  const planResult=useMemo(()=>target?.kind==="plan"?generatePlans(target.preferences):null,[target]);
+  const {catalog}=useEvents();
+  const planResult=useMemo(()=>target?.kind==="plan"?generatePlans(target.preferences,catalog.events):null,[target,catalog]);
   const sharedPlan=target?.kind==="plan"?planResult?.plans.find(p=>p.id===target.planId):null;
   const matching=qrRegistry.filter(e=>{if(e.kind!==category)return false;const ids=e.kind==="place"?[e.id]:themeById[e.id].stops;const ps=ids.map(id=>placeById[id]);const name=e.kind==="place"?placeById[e.id].name:themeById[e.id].name[locale];return (!district||ps.some(p=>p.district===district))&&searchKey([name,e.code,...ps.map(p=>p.district)].join(" ")).includes(searchKey(query.trim()));});
   const title=place?.name??theme?.name[locale]??c.preview;

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import {EventHomeLink} from "./events-calendar";
 import { useEffect,useState } from "react";
 import { ArrowUpRight,ChevronRight,Compass,Landmark,Leaf,Route,ScanLine,Utensils,Bookmark,Building2,Users,BookOpen } from "lucide-react";
 import { socialCopy } from "@/lib/social/copy";
@@ -17,6 +18,7 @@ export function MobileHome({locale}:{locale:Locale}){
   return <main id="app-ana-icerik" className="app-home" dir={locale==="ar"?"rtl":"ltr"} lang={locale}>
     <header className="app-home-greeting"><span>ESKİŞEHİR</span><h1>{c.homeTitle}</h1></header>
     <div className="app-home-tools"><Link href={`${base}/rotani-olustur`} className="app-route-tool"><span><Route size={26}/><ArrowUpRight size={19}/></span><strong>{c.routeAction}</strong><small>{c.routeHint}</small></Link><Link href={qrPath(locale)} className="app-scan-tool"><span><ScanLine size={26}/><ArrowUpRight size={19}/></span><strong>{c.scan}</strong><small>{c.scanHint}</small></Link></div>
+    <EventHomeLink locale={locale}/>
     {trip&&<Link className="app-resume" href={`${base}/gezilerim`}><span className="app-resume-icon"><Bookmark size={21}/></span><span><small>{c.continue}</small><strong>{trip.title}</strong></span><ChevronRight size={19}/></Link>}
     <section className="app-featured"><div className="app-section-heading"><h2>{c.themesTitle}</h2><Link href={`${qrPath(locale)}#code=R-0002`} aria-label={c.themes}><ArrowUpRight size={21}/></Link></div><Link className="app-city-card" href={qrPath(locale)}><img src={siteAsset("/media/eskisehir-hero.webp")} alt="" width={1200} height={800}/><span className="app-city-caption"><small>14 {locale==="tr"?"İLÇE":locale==="ar"?"مقاطعة":"· ESKİŞEHİR"}</small><strong>Eskişehir</strong><span>{c.browse} <ArrowUpRight size={21}/></span></span></Link><div className="app-theme-grid">{featured.map(({id,Icon,color})=>{const theme=themes.find(t=>t.id===id)!;return <Link href={`${qrPath(locale)}#code=${codeFor("theme",id)}`} key={id} className={`app-theme-tile ${color}`}><Icon size={22}/><strong>{theme.name[locale]}</strong><small>{theme.stops.length} {c.stops}</small></Link>;})}</div></section>
     <div className="sc-home-services"><Link href={`${base}/hizmetler`}><Users size={23}/><span><strong>{sc.services}</strong><small>{sc.guides} · {sc.homes} · {sc.camps}</small></span><ChevronRight size={19}/></Link><Link href={`${base}/sehir-rehberi`}><BookOpen size={23}/><span><strong>{sc.bank}</strong><small>{sc.bankHint}</small></span><ChevronRight size={19}/></Link></div>

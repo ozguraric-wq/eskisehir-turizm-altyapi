@@ -34,7 +34,7 @@ jobs:
         run: npm ci
 
       - name: Verify route and community contracts
-        run: node --test tests/social-platform.test.mjs tests/route-engine.test.mjs tests/mobile-app.test.mjs
+        run: node --test tests/social-platform.test.mjs tests/route-engine.test.mjs tests/mobile-app.test.mjs tests/events.test.mjs
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

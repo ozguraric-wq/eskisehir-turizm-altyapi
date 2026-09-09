@@ -1,4 +1,9 @@
 import { findTransitLeg, transitAvailable } from "./transit";
+import {eventSnapshot} from '../events/snapshot';
+import {eventStopId,stopVenue,venueById} from '../events/venues';
+import {minutesOf,durationFor,validateEventSelection,eventSignature} from '../events/catalog';
+import {stableId} from '../events/importers';
+import type {CityEvent} from '../events/types';
 import { districtNames, foodAreas, origins, placeById, places, roadEdges, cyclingEdges, themeById, themes, urbanZones, zoneNames, CATALOG_VERSION } from "./data";
 import type { DayPlan, Interest, Leg, Mode, Plan, PlanningResult, Preferences, ScheduleItem, Zone } from "./types";
 
@@ -31,12 +36,14 @@ export function normalizePreferences(value: unknown): Preferences {
   const mode = modes.includes(p.mode as Mode) ? p.mode! : defaults.mode;
   const origin = origins.includes(p.origin as Zone) ? p.origin! : defaults.origin;
   const selected = Array.isArray(p.interests) ? [...new Set(p.interests)].filter(i => interestKeys.includes(i)).slice(0, 7) : defaults.interests;
-  const start = finite(p.start, defaults.start, 360, 1080);
+  const start = finite(p.start, defaults.start, 360, 1320);
+  const events=Array.isArray(p.events)?[...new Set(p.events)].filter(id=>typeof id==='string'&&/^[a-z0-9][a-z0-9-]{1,110}$/.test(id)).slice(0,8):[];
   return {
     transitHoliday: p.transitHoliday === true,
     startMode: p.startMode === "fixed" ? "fixed" : "district", cycleKm: [25, 50, 80].includes(p.cycleKm ?? 0) ? p.cycleKm! : 25,
     districts: Array.isArray(p.districts) ? [...new Set(p.districts)].filter(d => districtNames.includes(d)) : [],
-    days: finite(p.days, defaults.days, 1, 4), start, end: finite(p.end, defaults.end, start + 60, 1140), mode, origin,
+    days: finite(p.days, defaults.days, 1, 4), start, end: finite(p.end, defaults.end, start + 60, 1410), mode, origin,
+    events,eventDurations:Object.fromEntries(events.filter(id=>typeof p.eventDurations?.[id]==='number'&&Number.isFinite(p.eventDurations[id])&&p.eventDurations[id]>=15&&p.eventDurations[id]<=360).map(id=>[id,Math.round(p.eventDurations![id])])),
     pace: ["relaxed", "balanced", "full"].includes(p.pace ?? "") ? p.pace! : defaults.pace,
     interests: selected.length ? selected : defaults.interests,
     meal: ["local", "vegetarian", "picnic"].includes(p.meal ?? "") ? p.meal! : defaults.meal,
@@ -51,7 +58,7 @@ export function dateForDay(date: string, offset: number): string {
   if (!validDate(date)) return "";
   const result = new Date(`${date}T12:00:00Z`); result.setUTCDate(result.getUTCDate() + offset); return result.toISOString().slice(0, 10);
 }
-export function zoneOf(id: string): Zone { return id.startsWith("origin:") ? id.slice(7) as Zone : id.startsWith("food:") ? id.split(":")[1] as Zone : placeById[id].zone; }
+export function zoneOf(id: string): Zone { return id.startsWith("origin:") ? id.slice(7) as Zone : id.startsWith("food:") ? id.split(":")[1] as Zone : id.startsWith('event:') ? stopVenue(id)!.zone : placeById[id].zone; }
 const pairKm: Record<string, number> = { "gerdek|hamamkaya": 0.5, "midas|midasvillage": 0.6, "sumer|velespit": 0.6, "atlihan|kursunlu": 0.2, "cam|kentbellegi": 0.1, "balmumu|cam": 0.1, "church|saat": 0.5, "cifteler|sakarya": 2 };
 export function estimateLeg(from: string, to: string, mode: Mode): Leg {
   if (from === to) return { from, to, km: 0, minutes: 0, rest: 0 };
@@ -81,6 +88,14 @@ const landmarkWeight: Record<string, number> = { midas: 100, pessinus: 94, kumbe
 function walkingForLeg(leg: Leg, mode: Mode) { return leg.walkingKm ?? (mode === "walk" || leg.km < 1.5 || mode === "transit" && !urbanZones.includes(zoneOf(leg.to)) ? leg.km : mode === "transit" ? 0.5 : 0.15); }
 const transitCache = new Map<string, Leg | null>();
 export function timedLeg(from: string, to: string, ready: number, p: Preferences, date = p.date): Leg {
+  // Account for reaching/leaving the actual venue before a transit boarding time.
+  const departure=stopVenue(from)?.accessMinutes??0,arrival=stopVenue(to)?.accessMinutes??0;
+  if(departure||arrival){
+    const a=stopVenue(from)?`origin:${zoneOf(from)}`:from,b=stopVenue(to)?`origin:${zoneOf(to)}`:to;
+    const leg=timedLeg(a,b,ready+departure,p,date),extra=departure+arrival;
+    const walked=p.mode==='walk'||p.mode==='transit'?extra/15:0.3;
+    return {...leg,from,to,minutes:leg.minutes+extra,km:round(leg.km+walked),walkingKm:(leg.walkingKm??walkingForLeg(leg,p.mode))+walked};
+  }
   if (p.mode !== "transit") return estimateLeg(from, to, p.mode);
   const a = zoneOf(from), b = zoneOf(to);
   const walk = estimateLeg(from, to, "walk");
@@ -98,24 +113,33 @@ export function timedLeg(from: string, to: string, ready: number, p: Preferences
 }
 function visitMinutes(id: string, p: Preferences) { return ceil5(placeById[id].minutes * (p.pace === "relaxed" ? 1.2 : p.pace === "full" ? 0.9 : 1) * (p.family ? 1.12 : 1)); }
 /** Every candidate is independently scheduled with a return to the selected base, including meal transfers and breaks. */
-export function schedule(ids: string[], preferences: Preferences, date = preferences.date): DayPlan | null {
+export function schedule(ids: string[], preferences: Preferences, date = preferences.date, catalog:CityEvent[]=eventSnapshot): DayPlan | null {
   const p = normalizePreferences({ ...preferences, startMode: "fixed" });
-  return scheduleNormalized(ids, p, date, new Set(eligiblePlaces(p, date).map(v => v.id)));
+  if(validateEventSelection(p,catalog).length)return null;
+  return scheduleNormalized(ids, p, date, new Set(eligiblePlaces(p, date).map(v => v.id)),catalog);
 }
-function scheduleNormalized(ids: string[], p: Preferences, date: string, allowed: Set<string>): DayPlan | null {
+function mergeEvents(ids:string[],events:string[]):string[][]{
+ if(!events.length)return [ids];if(!ids.length)return [events];
+ return [...mergeEvents(ids.slice(1),events).map(t=>[ids[0],...t]),...mergeEvents(ids,events.slice(1)).map(t=>[events[0],...t])];
+}
+function scheduleNormalized(ids: string[], p: Preferences, date: string, allowed: Set<string>,catalog:CityEvent[]): DayPlan | null {
+  const events=catalog.filter(e=>p.events?.includes(e.id)&&e.date===date).sort((a,b)=>a.time!.localeCompare(b.time!));
   const starts = p.mode === "transit" ? [p.start, ...[420,480,540].filter(time => time > p.start && time + 180 <= p.end)] : [p.start];
   let best: DayPlan | null = null;
   for (const start of starts) {
-    const day = fixedSchedule(ids, { ...p,start }, date, allowed);
-    if (day && (!best || day.score > best.score)) best = day;
+    for(const sequence of mergeEvents(ids,events.map(eventStopId))){
+      const day = fixedSchedule(sequence, { ...p,start }, date, allowed,events);
+      if (day && (!best || day.score > best.score)) best = day;
+    }
   }
   return best;
 }
-function fixedSchedule(ids: string[], p: Preferences, date: string, allowed: Set<string>): DayPlan | null {
-  if (!ids.length || new Set(ids).size !== ids.length || ids.some(id => !allowed.has(id))) return null;
+function fixedSchedule(sequence: string[], p: Preferences, date: string, allowed: Set<string>,events:CityEvent[]): DayPlan | null {
+  const ids=sequence.filter(id=>!id.startsWith('event:'));
+  if (!sequence.length || new Set(sequence).size !== sequence.length || ids.some(id => !allowed.has(id))) return null;
   let now = p.start, prev = `origin:${p.origin}`, km = 0, travel = 0, walking = 0;
   const items: ScheduleItem[] = [];
-  let lunch = p.start > 840, dinner = false;
+  let lunch = p.start > 840, dinner = p.start > 1140;
   const addLeg = (leg: Leg) => { km += leg.km; travel += leg.minutes; walking += walkingForLeg(leg, p.mode); };
   const meal = (kind: "lunch" | "dinner", zone: Zone): boolean => {
     const id = `food:${zone}:${kind}`;
@@ -130,7 +154,17 @@ function fixedSchedule(ids: string[], p: Preferences, date: string, allowed: Set
     if (kind === "lunch") lunch = true; else dinner = true;
     return true;
   };
-  for (const id of ids) {
+  for (const id of sequence) {
+    if(id.startsWith('event:')){
+      const event=events.find(e=>eventStopId(e)===id)!;
+      const start=minutesOf(event.time!),duration=durationFor(event,p),zone=venueById[event.venueId!].zone;
+      if(!lunch&&start+duration>840&&start>=720){if(!meal('lunch',zoneOf(prev)))return null;}
+      if(!dinner&&start+duration>1140&&start>=1080){if(!meal('dinner',zoneOf(prev)))return null;}
+      const leg=timedLeg(prev,id,now,p,date),arrivalBy=start-20;
+      if(!Number.isFinite(leg.minutes)||now+leg.minutes>arrivalBy||start+duration>p.end)return null;
+      addLeg(leg);items.push({kind:'event',id,zone,start,end:start+duration,leg,wait:Math.max(0,arrivalBy-now-leg.minutes),event,arrivalBy,estimatedEnd:!event.endTime});
+      now=start+duration;prev=id;continue;
+    }
     const place = placeById[id];
     let leg = timedLeg(prev, id, now, p, date);
     const duration = visitMinutes(id, p);
@@ -169,14 +203,14 @@ function fixedSchedule(ids: string[], p: Preferences, date: string, allowed: Set
   const focusFit = p.focus ? ids.filter(id => themeById[p.focus].stops.includes(id)).length : 0;
   const visits = ids.reduce((n, id) => n + visitMinutes(id, p), 0);
   const relevant = ids.filter(id => placeById[id].interests.some(i => p.interests.includes(i)));
-  const quality = relevant.length / ids.length;
+  const quality = ids.length?relevant.length / ids.length:0;
   const landmark = Math.max(0, ...relevant.map(id => landmarkWeight[id] ?? 15));
   const rural = ids.some(id => !urbanZones.includes(placeById[id].zone));
   const modeFit = ["bicycle", "motorcycle"].includes(p.mode) && rural ? 15 : 0;
   // Relevance and destination value outrank the number of cheap-to-reach urban stops.
   const score = quality * 95 + interestFit * 25 + landmark * .65 + Math.min(ids.length, 3) * 6
     + Math.min(visits, 220) * .1 + focusFit * 70 + modeFit + (rural ? 10 : 0)
-    - travel * .045 - (ids.length - relevant.length) * 12;
+    - travel * .045 - (ids.length - relevant.length) * 12 - (events.length?items.reduce((sum,item)=>sum+item.wait,0)*.06:0);
   return { date, theme: "", origin: p.origin, start: p.start, items, placeIds: ids, km: round(km), travel, walking: round(walking), finish: now + back.minutes, score };
 }
 function permutations(ids: string[]): string[][] {
@@ -188,7 +222,7 @@ function subsets(ids: string[], max: number): string[][] {
   for (let bits = 1; bits < 2 ** ids.length; bits++) { const group = ids.filter((_, i) => bits & 1 << i); if (group.length <= max) out.push(group); }
   return out;
 }
-function dayPoolAt(p: Preferences, offset: number) {
+function dayPoolAt(p: Preferences, offset: number,catalog:CityEvent[]) {
   const date = dateForDay(p.date, offset);
   const allowed = new Set(eligiblePlaces(p, date).map(v => v.id));
   const unique = new Map<string, DayPlan>();
@@ -208,11 +242,14 @@ function dayPoolAt(p: Preferences, offset: number) {
       let best: DayPlan | null = null;
       for (const order of permutations(group)) {
         evaluated++;
-        const day = scheduleNormalized(order, p, date, allowed);
+        const day = scheduleNormalized(order, p, date, allowed,catalog);
         if (day && (!best || day.score > best.score)) best = day;
       }
       if (best) { best.theme = theme.id; best.score += best.placeIds.filter(id => p.required?.includes(id)).length * 160; unique.set(key, best); }
     }
+  }
+  if(catalog.some(e=>p.events?.includes(e.id)&&e.date===date)){
+    const eventOnly=scheduleNormalized([],p,date,allowed,catalog);if(eventOnly)unique.set('event-only',eventOnly);
   }
   const ranked = [...unique.values()].sort((a, b) => b.score - a.score || a.placeIds.join().localeCompare(b.placeIds.join()));
   const retained = new Set<DayPlan>();
@@ -222,11 +259,13 @@ function dayPoolAt(p: Preferences, offset: number) {
   for (const day of ranked) { if (retained.size >= 220) break; retained.add(day); }
   return { days: [...retained].sort((a, b) => b.score - a.score), evaluated };
 }
-function dayPool(p: Preferences, offset: number) {
-  if (!districtDiscovery(p)) return dayPoolAt(p, offset);
+function dayPool(p: Preferences, offset: number,catalog:CityEvent[]) {
+  if (!districtDiscovery(p)) return dayPoolAt(p, offset,catalog);
   const available = eligiblePlaces(p, dateForDay(p.date, offset));
   const bases = [...new Set(available.map(place => urbanZones.includes(place.zone) ? "center" as Zone : place.zone))];
-  const pools = bases.map(origin => dayPoolAt({ ...p, origin, startMode: "fixed" }, offset));
+  const eventBases=catalog.filter(e=>p.events?.includes(e.id)&&e.date===dateForDay(p.date,offset)&&e.venueId).map(e=>venueById[e.venueId!].zone);
+  eventBases.forEach(base=>{if(!bases.includes(base))bases.push(base);});
+  const pools = bases.map(origin => dayPoolAt({ ...p, origin, startMode: "fixed" }, offset,catalog));
   const ranked = pools.flatMap(pool => pool.days).sort((a, b) => b.score - a.score);
   const retained = new Set<DayPlan>();
   // Local starts are visible plan data, never an unannounced teleport from the city.
@@ -235,9 +274,11 @@ function dayPool(p: Preferences, offset: number) {
   return { days: [...retained].sort((a, b) => b.score - a.score), evaluated: pools.reduce((sum, pool) => sum + pool.evaluated, 0) };
 }
 function similarity(a: string[], b: string[]) { const aa = new Set(a), bb = new Set(b); const overlap = [...aa].filter(id => bb.has(id)).length; return overlap / Math.max(1, new Set([...aa, ...bb]).size); }
-export function generatePlans(input: unknown): PlanningResult {
+export function generatePlans(input: unknown,catalog:CityEvent[]=eventSnapshot): PlanningResult {
   const p = normalizePreferences(input);
-  const pools = Array.from({ length: p.days }, (_, i) => dayPool(p, i));
+  const eventIssues=validateEventSelection(p,catalog);
+  if(eventIssues.length)return {plans:[],eventIssues,unavailableDistricts:[],evaluated:0,eligible:eligiblePlaces(p).length,requestedDays:p.days};
+  const pools = Array.from({ length: p.days }, (_, i) => dayPool(p, i,catalog));
   let beam: { days: DayPlan[]; used: string[]; score: number }[] = [{ days: [], used: [], score: 0 }];
   for (const pool of pools) {
     const next: typeof beam = [];
@@ -281,14 +322,15 @@ export function generatePlans(input: unknown): PlanningResult {
     if (!ranked.length) break;
     const state = ranked[0].state;
     usedSignatures.add([...state.used].sort().join("|"));
-    plans.push({ id: state.days.map(d => `${d.origin}:` + d.placeIds.join(".")).join("~"), days: state.days, score: state.score, covered: p.interests.filter(i => state.used.some(id => placeById[id].interests.includes(i))) });
+    const suffix=p.events?.length?'!e'+stableId(catalog.filter(e=>p.events!.includes(e.id)).map(e=>eventSignature(e,p)).sort().join('!')):'';
+    plans.push({ id: state.days.map(d => `${d.origin}:` + d.placeIds.join(".")).join("~")+suffix, days: state.days, score: state.score, covered: p.interests.filter(i => state.used.some(id => placeById[id].interests.includes(i))) });
   }
-  return { plans, unavailableDistricts: p.districts.filter(d => !pools.some(pool => pool.days.some(day => day.placeIds.some(id => placeById[id].district === d)))), evaluated: pools.reduce((n, pool) => n + pool.evaluated, 0), eligible: eligiblePlaces(p).length, requestedDays: p.days };
+  return { plans,eventIssues:!plans.length&&p.events?.length?[{code:'travel',eventIds:p.events}]:[], unavailableDistricts: p.districts.filter(d => !pools.some(pool => pool.days.some(day => day.placeIds.some(id => placeById[id].district === d)))), evaluated: pools.reduce((n, pool) => n + pool.evaluated, 0), eligible: eligiblePlaces(p).length, requestedDays: p.days };
 }
 export function clock(minutes: number) { return `${Math.floor(minutes / 60).toString().padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`; }
 export function mapSearch(query: string) { return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query + " Eskişehir Türkiye")}`; }
 export function directions(from: string, to: string, mode: Mode) {
-  const name = (id: string) => id.startsWith("origin:") ? zoneNames[zoneOf(id)] : id.startsWith("food:") ? `${zoneNames[zoneOf(id)]} restoran` : placeById[id].name;
+  const name = (id: string) => id.startsWith("origin:") ? zoneNames[zoneOf(id)] : id.startsWith("food:") ? `${zoneNames[zoneOf(id)]} restoran` : id.startsWith("event:") ? stopVenue(id)!.name : placeById[id].name;
   const travelmode = mode === "walk" ? "walking" : mode === "bicycle" ? "bicycling" : mode === "transit" ? "transit" : "driving";
   return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(name(from) + " Eskişehir Türkiye")}&destination=${encodeURIComponent(name(to) + " Eskişehir Türkiye")}&travelmode=${travelmode}`;
 }

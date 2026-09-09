@@ -1,10 +1,11 @@
 import { assistantRequestSchema,assistantOutputSchema,responseJsonSchema,type AssistantProposal } from "./assistant-contract";
 import { CATALOG_VERSION,VERIFIED_ON,places,themes,foodAreas,zoneNames } from "../routing/data";
+import {getEventCatalog} from '../events/server';
 import { generatePlans,normalizePreferences } from "../routing/engine";
 import { mobileCopy } from "./copy";
 
-interface Prepared { bind(...values:unknown[]):Prepared; first<T>():Promise<T|null>; run():Promise<unknown>; }
-export interface AiDatabase { prepare(sql:string):Prepared; }
+import type {Database} from '../social/server-contract';
+export interface AiDatabase extends Database {}
 export interface AssistantEnv { OPENAI_API_KEY?:string;OPENAI_MODEL?:string;SITE_AUTH_USERNAME?:string;SITE_AUTH_PASSWORD?:string;SITE_AUTH_SESSION_SECRET?:string;DB?:AiDatabase;AI_DAILY_LIMIT?:string;AI_ALLOWED_ORIGINS?:string; }
 const encoder=new TextEncoder();
 const DEFAULT_ORIGINS=["https://localhost","capacitor://localhost","https://ozguraric-wq.github.io"];
@@ -73,8 +74,8 @@ export async function handleAssistantApi(request:Request,env:AssistantEnv,fetche
     const raw=output.output?.filter(o=>o.type==="message").flatMap(o=>o.content??[]).filter(c=>c.type==="output_text").map(c=>c.text??"").join("");
     const parsed=assistantOutputSchema.safeParse(JSON.parse(raw??""));
     if(!parsed.success)return json({error:"invalid_reply"},502);
-    const model=parsed.data,preferences=normalizePreferences(model.preferences);
-    const result=model.action==="plan"?generatePlans(preferences):null;
+    const model=parsed.data,preferences=normalizePreferences({...model.preferences,events:p.events,eventDurations:p.eventDurations});
+    const result=model.action==="plan"?generatePlans(preferences,p.events?.length?(await getEventCatalog(env)).events:undefined):null;
     const warnings:string[]=[];
     if(result&&!result.plans.length)warnings.push(mobileCopy(locale).noFit);
     const sources=model.sourcePlaceIds.map(id=>{const place=places.find(p=>p.id===id)!;return {id,name:place.name,url:place.source};});

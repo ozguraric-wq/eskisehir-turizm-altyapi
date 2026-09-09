@@ -1,3 +1,5 @@
+import {stopVenue} from '../events/venues';
+import {eventCopy} from '../events/copy';
 import { discoveriesForDay, discoveryText } from "./heritage";
 import { heritageCopy } from "./heritage-copy";
 import { transitMapUrl } from "./transit";
@@ -10,6 +12,7 @@ import { hospitality, HOSPITALITY_SOURCE } from "./hospitality";
 import type { DayPlan, Locale, Plan, Preferences, ScheduleItem } from "./types";
 
 export function placeQuery(id: string, p: Preferences): string {
+  if(id.startsWith("event:"))return stopVenue(id)!.query;
   const zone = zoneOf(id);
   const food = foodAreas.find(f => f.zone === zone);
   const name = id.startsWith("origin:") ? zoneNames[zone]
@@ -69,6 +72,7 @@ export function itemText(item: ScheduleItem, p: Preferences, locale: Locale) {
     const stop = placeById[item.id];
     return { title: stop.name, area: stop.district, description: stop.summary[locale], note: c[stop.note], source: stop.source };
   }
+  if(item.kind==='event'&&item.event){const e=item.event,ec=eventCopy(locale);return {title:e.title,area:e.venue,description:locale==='tr'?e.summary:'',note:[`${ec.arrival}: ${clock(item.arrivalBy??item.start-20)}`,item.estimatedEnd?ec.estimatedEnd+'. '+ec.estimate:'',ec.routingHint,ec.transfer,ec.staleSaved].filter(Boolean).join(' · '),source:e.sourceUrl};}
   if (item.kind === "return") return { title: c.return, area: zoneNames[item.zone], description: "", note: "", source: "" };
   const packed = p.meal === "picnic" || !food;
   return { title: `${item.id.endsWith("dinner") ? c.dinner : c.lunch} · ${packed ? c.packed : food.name}`, area: zoneNames[item.zone], description: p.meal === "picnic" ? c.picnicNote : !food ? c.packedNote : food[p.meal][locale], note: packed ? "" : c.mealNote, source: food?.source ?? "" };
@@ -104,7 +108,7 @@ export function calendarFile(plan: Plan, preferences: Preferences, locale: Local
     const text = itemText(item, dayP, locale);
     const context=discoveryMap[item.id] ?? [], hc=heritageCopy(locale);
     const description = [text.description, text.note, context.length ? discoveryText(context,locale,true) : "", context.length ? hc.noDetour : "", context.some(d => d.kind !== "heritage") ? hc.shoppingNote : "", districtDiscovery(p) ? `${c.localStart}: ${zoneNames[day.origin]}. ${c.localAccess}` : "", `${c.duration}: ~${item.leg.km} km · ${item.leg.minutes} ${c.min}`, legMapUrl(item.leg.from, item.id, dayP), text.source, c.printNote].filter(Boolean).join("\n\n");
-    lines.push("BEGIN:VEVENT", `UID:${hash(`${plan.id}|${day.date}|${item.id}`)}@etahb.eskisehir`, `DTSTAMP:${stamp.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z")}`, `DTSTART:${calendarTime(day.date, item.start)}`, `DTEND:${calendarTime(day.date, item.end)}`, `SUMMARY:${icsText(text.title)}`, `LOCATION:${icsText(placeQuery(item.id, dayP))}`, `DESCRIPTION:${icsText(description)}`, `URL:${legMapUrl(item.leg.from, item.id, dayP)}`, "STATUS:TENTATIVE", "TRANSP:TRANSPARENT", "END:VEVENT");
+    lines.push("BEGIN:VEVENT", `UID:${hash(`${plan.id}|${day.date}|${item.id}`)}@etahb.eskisehir`, `DTSTAMP:${stamp.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z")}`, `DTSTART:${calendarTime(day.date, item.start)}`, `DTEND:${calendarTime(day.date, item.end)}`, `SUMMARY:${icsText(text.title)}`, `LOCATION:${icsText(placeQuery(item.id, dayP))}`, `DESCRIPTION:${icsText(description)}`, `URL:${legMapUrl(item.leg.from, item.id, dayP)}`, "STATUS:TENTATIVE", item.kind==="event"?"TRANSP:OPAQUE":"TRANSP:TRANSPARENT", ...(item.kind==="event"?["BEGIN:VALARM","TRIGGER:-PT20M","ACTION:DISPLAY",`DESCRIPTION:${icsText(text.title)}`,"END:VALARM"]:[]), "END:VEVENT");
   }
   }
   return [...lines, "END:VCALENDAR"].map(foldCalendarLine).join("\r\n") + "\r\n";
@@ -120,7 +124,7 @@ export function printDocumentHtml(plan: Plan, p: Preferences, locale: Locale, lo
     const hotels = districts.flatMap(d => hospitality.filter(h => h.kind === "hotel" && h.district === d).slice(0, 2));
     const rows = day.items.map(item => {
       const text = itemText(item, dayP, locale), context=discoveryMap[item.id] ?? [];
-      const visitNote=item.kind === "visit" && placeById[item.id].note !== "hours" ? text.note : "";
+      const visitNote=item.kind === "event" || item.kind === "visit" && placeById[item.id].note !== "hours" ? text.note : "";
       const discoveryLine=context.length ? `<span class="discovery-print"> · ${context.slice(0,2).map(d => `<a href="${e(d.source)}">${e(d.name[locale])} · ${e(d.status ? heritageCopy(locale)[d.status] : heritageCopy(locale).registered)} ↗</a>`).join(" · ")}</span>` : "";
       const transitRows = item.leg.transit?.rides.map(ride => `<tr class="transit"><td class="time">${ride.estimatedBoard ? "~" : ""}${clock(ride.depart)}<br><span>~${clock(ride.arrive)}</span></td><td><div class="stop-title">${e(tc[ride.vehicle])} ${e(ride.line)} · ${e(ride.direction)}</div><p>${e(ride.board)} → ${e(ride.alight)}</p><p class="note">${ride.terminalDeparture !== undefined ? `${e(tc.terminal)}: ${e(ride.terminal)} · ${clock(ride.terminalDeparture)}` : `${e(tc.frequency)}: ${ride.headway} min`}</p><div class="links"><a href="${e(ride.source)}">${e(tc.source)} ↗</a> · <a href="${e(transitMapUrl(ride))}">Google Maps ↗</a></div></td></tr>`).join("") ?? "";
       return transitRows + `<tr class="${item.kind}"><td class="time">${clock(item.start)}${item.end !== item.start ? `<br><span>${clock(item.end)}</span>` : ""}</td><td><div class="stop-title">${e(text.title)}</div><div class="area">${e(text.area)} · ~${item.leg.km} km · ${item.leg.minutes} ${e(c.min)}</div>${text.description ? `<p>${e(text.description)}</p>` : ""}${visitNote ? `<p class="note">${e(visitNote)}</p>` : ""}<div class="links"><a href="${e(legMapUrl(item.leg.from, item.id, dayP))}">Google Maps ↗</a>${text.source ? ` · <a href="${e(text.source)}">${e(c.source)} ↗</a>` : ""}${discoveryLine}</div></td></tr>`;

@@ -6,6 +6,7 @@ import {ApiError,readJson,registerSchema,profileSchema,postSchema,voteSchema,req
 import {configured,identify,newSession,cookie,createProfile,passwordHash,equal,randomToken,digest,requestLimit,userLimit} from './auth';
 import {providers,startOAuth,launchOAuth,finishOAuth} from './oauth';
 import {screenText,checkWithAI} from './moderation';
+import {getEventCatalog,writeReviewedEvents} from '../events/server';
 import {generatePlans,normalizePreferences} from '../routing/engine';
 import {placeById,districtNames} from '../routing/data';
 import {demoGuides,demoHomes} from './demo-services';
@@ -59,6 +60,7 @@ export async function handleSocialApi(request:Request,env:SocialEnv,platform:'si
   if(path==='/kit')return json(await kitApi(request,env,requireUser(identity)));
   if((path.startsWith('/posts')||path==='/trends')&&method==='GET')await ensureDemoContent(env);
   if(path==='/knowledge'&&method==='POST')return json(await answerTourismQuestion(request,env,requireUser(identity),fetcher));
+  if(path==='/admin/events'&&method==='PUT'){if(!identity?.admin)throw new ApiError('forbidden',403);return json(await writeReviewedEvents(request,env));}
   if(path.startsWith('/admin')){if(!identity?.admin)throw new ApiError('forbidden',403);return json(await adminApi(path,method,request,env,identity));}
   if(path==='/auth/logout'&&method==='POST'){if(identity?.tokenHash)await env.DB!.prepare('DELETE FROM social_sessions WHERE hash=?').bind(identity.tokenHash).run();return json({ok:true},200,cookie('',0));}
   if(path==='/me'&&method==='GET')return json({profile:identity?await profileDto(env,identity):null});
@@ -88,7 +90,7 @@ export async function handleSocialApi(request:Request,env:SocialEnv,platform:'si
 
   if(path==='/posts'&&method==='POST'){
    const user=requireUser(identity);await userLimit(env,user.id,'posts',12);const b=postSchema.parse(await readJson(request));textGuard(b.title+' '+b.body);
-   const prefs=normalizePreferences(b.preferences),plan=generatePlans(prefs).plans.find(p=>p.id===b.planId);if(!plan)throw new ApiError('route_changed',409);
+   const prefs=normalizePreferences(b.preferences),plan=generatePlans(prefs,prefs.events?.length?(await getEventCatalog(env)).events:undefined).plans.find(p=>p.id===b.planId);if(!plan)throw new ApiError('route_changed',409);
    const placeIds=[...new Set(plan.days.flatMap(d=>d.placeIds))],districts=[...new Set(placeIds.map(id=>placeById[id].district))],ai=await checkWithAI(b.title+'\n'+b.body,env.OPENAI_API_KEY,fetcher);if(ai==='flagged')throw new ApiError('unsafe_text');
    const id=crypto.randomUUID();await env.DB!.prepare("INSERT INTO social_posts (id,user_id,title,body,preferences,place_ids,districts,mode,days,status,revision,ai_state,created_at) VALUES (?,?,?,?,?,?,?,?,?,'pending',1,?,?)").bind(id,user.id,b.title,b.body,JSON.stringify(prefs),JSON.stringify(placeIds),JSON.stringify(districts),prefs.mode,plan.days.length,ai,nowIso()).run();return json({id,status:'pending'},201);
   }

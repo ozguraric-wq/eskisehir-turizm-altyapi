@@ -1,5 +1,8 @@
 "use client";
 
+import {useEvents} from '@/lib/events/client';
+import {eventCopy,eventIssueText} from '@/lib/events/copy';
+import {RouteEventPicker} from './events-calendar';
 import { RouteSocialAction } from "./social-compose";
 import { RouteServices } from "./local-services";
 import { QrShare } from "./qr-share";
@@ -10,7 +13,7 @@ import { LiveRouteAssistant } from "./live-route-assistant";
 import { mobileCopy } from "@/lib/mobile/copy";
 import { saveTrip,readTrips,writeTrips } from "@/lib/mobile/trips";
 import { isNativeApp,shareNativeFile,shareNativeUrl,printNativeHtml,imageDataUrl } from "@/lib/mobile/native";
-import { ArrowRight, Bike, Bookmark, CalendarPlus, Check, ChevronDown, Clock3, Compass, Download, ExternalLink, Footprints, Info, MapPin, Navigation, Printer, Route, Share2, SlidersHorizontal, Sparkles, TrainFront, Trash2, Utensils, Car, Motorbike as Motorcycle } from "lucide-react";
+import { ArrowRight, Bike, Bookmark, CalendarDays, CalendarPlus, Check, ChevronDown, Clock3, Compass, Download, ExternalLink, Footprints, Info, MapPin, Navigation, Printer, Route, Share2, SlidersHorizontal, Sparkles, TrainFront, Trash2, Utensils, Car, Motorbike as Motorcycle } from "lucide-react";
 import { CATALOG_VERSION, districtNames, foodAreas, origins, placeById, places, sources, themeById, themes, urbanZones, zoneNames } from "@/lib/routing/data";
 import { clock, decodePreferences, defaults, encodePreferences, generatePlans, mapSearch, normalizePreferences, parseRequest, districtDiscovery, preferencesForDay, cyclingLimit } from "@/lib/routing/engine";
 import { siteAsset } from "@/lib/site-path";
@@ -21,7 +24,7 @@ import { RouteDiscoveries } from "./route-discoveries";
 import { discoveriesForDay, discoveryBadge, discoveryText } from "@/lib/routing/heritage";
 import { heritageCopy } from "@/lib/routing/heritage-copy";
 import { RouteHospitality } from "./route-hospitality";
-import { calendarFile, legMapUrl, navigationSegments, phoneMapUrl, printDocumentHtml } from "@/lib/routing/exports";
+import { calendarFile, itemText, legMapUrl, navigationSegments, phoneMapUrl, printDocumentHtml } from "@/lib/routing/exports";
 import { copyFor } from "@/lib/routing/copy";
 import type { Interest, Locale, Mode, Plan, Preferences } from "@/lib/routing/types";
 
@@ -32,7 +35,8 @@ type SavedPlan = { id: string; title: string; p: Preferences; planId: string; ve
 
 export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
   const c = copyFor(locale), tc = transitCopy(locale), hc = heritageCopy(locale);
-  const mc=mobileCopy(locale);
+  const mc=mobileCopy(locale),ec=eventCopy(locale);
+  const {catalog,loading:eventsLoading,failed:eventsFailed}=useEvents();
   const [appMode,setAppMode]=useState(process.env.NEXT_PUBLIC_MOBILE_APP === "true");
   const [draft, setDraft] = useState<Preferences>(defaults);
   const [applied, setApplied] = useState<Preferences>(defaults);
@@ -56,7 +60,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
   const current = result.plans[active];
   const day = current?.days[Math.min(dayIndex, current.days.length - 1)];
   const dirty = JSON.stringify(draft) !== JSON.stringify(applied);
-  const planName = (plan: Plan) => applied.focus ? themeById[applied.focus].name[locale] : [...new Set(plan.days.flatMap(d => d.placeIds.map(id => placeById[id].district)))].join(" · ");
+  const planName = (plan: Plan) => applied.focus ? themeById[applied.focus].name[locale] : [...new Set(plan.days.flatMap(d => d.placeIds.map(id => placeById[id].district)))].join(" · ") || plan.days.flatMap(d=>d.items.flatMap(i=>i.event?[i.event.title]:[])).join(" · ");
   const fmtDuration = (minutes: number) => `${Math.floor(minutes / 60)} ${c.hour}${minutes % 60 ? ` ${minutes % 60} ${c.min}` : ""}`;
 
   useEffect(() => {
@@ -78,12 +82,14 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
     if (encoded) {
       const restored = decodePreferences(encoded);
       if (restored) {
-        const next = generatePlans(restored);
+        const next = generatePlans(restored,catalog.events);
         setDraft(restored); setApplied(restored); setResult(next); setHasPlanned(true); setEditing(false);
         try { const id = decodeURIComponent(hash.match(/(?:^#|&)plan=([^&]+)/)?.[1] ?? ""); setActive(Math.max(0, next.plans.findIndex(p => p.id === id))); } catch { setActive(0); }
       }
     }
   }, []);
+
+  useEffect(()=>{if(hasPlanned&&applied.events?.length){const next=generatePlans(applied,catalog.events);setResult(next);setActive(0);}},[catalog]);
 
   function change<K extends keyof Preferences>(key: K, value: Preferences[K]) { setDraft(p => normalizePreferences({ ...p, [key]: value, ...(["interests", "districts"].includes(key) ? { focus: "" } : {}) })); setNotice(""); }
   function goToStep(next: number) {
@@ -92,8 +98,8 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
   }
   function calculate(p = draft, selectedId?: string, scroll = false) {
     const safe = normalizePreferences(p);
-    if (safe.mode === "transit" && !safe.date) { setDraft(safe); goToStep(0); setNotice(tc.needDate); return; }
-    const next = generatePlans(safe);
+    if ((safe.mode === "transit" || safe.events?.length) && !safe.date) { setDraft(safe); goToStep(0); setNotice(safe.events?.length?eventIssueText("date",locale):tc.needDate); return; }
+    const next = generatePlans(safe,catalog.events);
     setDraft(safe); setApplied(safe); setResult(next); setActive(Math.max(0, next.plans.findIndex(plan => plan.id === selectedId))); setDayIndex(0); setExpandedStop(null); setNotice(""); setShareFallback(""); setHasPlanned(true); setEditing(false);
     if (scroll) requestAnimationFrame(() => { resultRef.current?.focus({ preventScroll: true }); resultRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); });
   }
@@ -158,11 +164,12 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
       if (applied.mode === "transit") lines.push(tc.snapshot, `${tc.checked}: ${TRANSIT_CHECKED_ON}`);
       d.items.forEach(item => {
         const food = foodAreas.find(f => f.zone === item.zone);
-        const title = item.kind === "visit" ? placeById[item.id].name : item.kind === "return" ? c.return : `${item.id.endsWith("dinner") ? c.dinner : c.lunch} · ${food?.name ?? zoneNames[item.zone]}`;
+        const title = itemText(item,applied,locale).title;
         lines.push(`${clock(item.start)}–${clock(item.end)} ${title}`, `  ~${item.leg.km} km · ${item.leg.minutes} ${c.min} ${c.duration}`);
         item.leg.transit?.rides.forEach(ride => lines.push(rideText(ride, locale)));
         if(discoveries[item.id]?.length) lines.push(discoveryText(discoveries[item.id],locale,true),hc.noDetour,hc.shoppingNote);
         if (item.kind === "visit") lines.push(`  ${placeById[item.id].summary[locale]}`, `  ${placeById[item.id].source}`);
+        if (item.kind === "event") lines.push(itemText(item,applied,locale).note,item.event?.sourceUrl??"");
         if (item.kind === "meal") lines.push(`  ${applied.meal === "picnic" ? c.picnicNote : !food ? c.packedNote : food[applied.meal][locale]}`);
       });
       lines.push("");
@@ -192,9 +199,9 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
             <ol className="rp-step-nav" aria-label={c.preferences}>{[c.stepTime, c.stepDiscover, c.stepPersonal].map((label, i) => <li key={label}><button type="button" className={step === i ? "selected" : ""} aria-current={step === i ? "step" : undefined} onClick={() => goToStep(i)}><span>{i + 1}</span>{label}</button></li>)}</ol>
             <fieldset className="rp-step-pane" hidden={step !== 0} data-step="0" tabIndex={-1}><legend className="sr-only">1. {c.stepTime}</legend>
               <fieldset><legend>{c.days}</legend><div className="rp-segment">{[1, 2, 3, 4].map(n => <button type="button" key={n} aria-pressed={draft.days === n} className={draft.days === n ? "selected" : ""} onClick={() => change("days", n)}>{n} <span>{c.day}</span></button>)}</div></fieldset>
-              <label>{c.date}<input type="date" value={draft.date} aria-required={draft.mode === "transit"} onChange={e => change("date", e.target.value)} />{draft.mode === "transit" && !draft.date && <span className="rp-field-help" role="status">{tc.needDate}</span>}</label>
+              <label>{c.date}<input type="date" value={draft.date} aria-required={draft.mode === "transit"||!!draft.events?.length} onChange={e => change("date", e.target.value)} />{draft.mode === "transit" && !draft.date && <span className="rp-field-help" role="status">{tc.needDate}</span>}</label>
               {draft.mode === "transit" && <div className="rp-transit-date"><label><input type="checkbox" checked={draft.transitHoliday} onChange={e => change("transitHoliday",e.target.checked)}/><span>{tc.holiday}</span></label><p className="rp-field-help">{tc.holidayNote}</p></div>}
-              <div className="rp-two-fields"><label>{draft.mode === "transit" ? tc.earliest : c.start}<select value={draft.start} onChange={e => change("start", Number(e.target.value))}>{[...new Set([draft.start,360,420,480,540,600,660,720,780,840,900,960,1020,1080])].sort((a,b)=>a-b).map(n => <option key={n} value={n}>{clock(n)}</option>)}</select></label><label>{c.end}<select value={draft.end} onChange={e => change("end", Number(e.target.value))}>{[...new Set([draft.end,420,480,540,600,660,720,780,840,900,960,1020,1080,1140])].sort((a,b)=>a-b).filter(n => n >= draft.start + 60).map(n => <option key={n} value={n}>{clock(n)}</option>)}</select></label></div>
+              <div className="rp-two-fields"><label>{draft.mode === "transit" ? tc.earliest : c.start}<select value={draft.start} onChange={e => change("start", Number(e.target.value))}>{[...new Set([draft.start,360,420,480,540,600,660,720,780,840,900,960,1020,1080,1140,1200,1260,1320])].sort((a,b)=>a-b).map(n => <option key={n} value={n}>{clock(n)}</option>)}</select></label><label>{c.end}<select value={draft.end} onChange={e => change("end", Number(e.target.value))}>{[...new Set([draft.end,420,480,540,600,660,720,780,840,900,960,1020,1080,1140,1200,1260,1320,1380,1410])].sort((a,b)=>a-b).filter(n => n >= draft.start + 60).map(n => <option key={n} value={n}>{clock(n)}</option>)}</select></label></div>
               <label>{districtDiscovery(draft) ? c.accessOrigin : c.origin}<select value={draft.origin} onChange={e => change("origin", e.target.value as Preferences["origin"])}>{origins.map(z => <option key={z} value={z}>{zoneNames[z]}</option>)}</select><span className="rp-field-help">{districtDiscovery(draft) ? c.districtStartHelp : c.originNote}</span></label>
             </fieldset>
             <fieldset className="rp-step-pane" hidden={step !== 1} data-step="1" tabIndex={-1}><legend className="sr-only">2. {c.stepDiscover}</legend>
@@ -206,6 +213,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
               <fieldset className="rp-district-picker"><legend>{c.districts}</legend><p className="rp-field-help">{c.districtHelp}</p><details><summary>{draft.districts.length ? draft.districts.join(" · ") : `${c.allDistricts} (14)`}<ChevronDown size={17} aria-hidden="true" /></summary><div className="rp-toggle-list">{districtNames.map(d => <label key={d}><input type="checkbox" checked={draft.districts.includes(d)} onChange={() => change("districts", draft.districts.includes(d) ? draft.districts.filter(x => x !== d) : [...draft.districts, d])} /><span>{d}</span></label>)}</div>{draft.districts.length > 0 && <button type="button" className="rp-text-button" onClick={() => change("districts", [])}>{c.allDistricts}</button>}</details></fieldset>
             </fieldset>
             <fieldset className="rp-step-pane" hidden={step !== 2} data-step="2" tabIndex={-1}><legend className="sr-only">3. {c.stepPersonal}</legend>
+              <RouteEventPicker locale={locale} p={draft} catalog={catalog} onChange={p=>{setDraft(p);setNotice("");}}/>
               <details className="app-must-see"><summary>{mc.mustSee} ({draft.required?.length??0}/8)<ChevronDown size={17}/></summary><p className="rp-field-help">{mc.mustSeeHint}</p><label>{mc.searchStops}<input type="search" value={stopSearch} onChange={e=>setStopSearch(e.target.value)} maxLength={80}/></label><div className="rp-toggle-list">{places.filter(place=>`${place.name} ${place.district}`.toLocaleLowerCase("tr").includes(stopSearch.toLocaleLowerCase("tr"))).sort((a,b)=>Number(draft.required?.includes(b.id)??false)-Number(draft.required?.includes(a.id)??false)||Number(b.interests.some(i=>draft.interests.includes(i)))-Number(a.interests.some(i=>draft.interests.includes(i)))).slice(0,stopSearch?47:8).map(place=><label key={place.id}><input type="checkbox" checked={draft.required?.includes(place.id)??false} disabled={(draft.required?.length??0)>=8&&!draft.required?.includes(place.id)} onChange={()=>setDraft(p=>normalizePreferences({...p,required:p.required?.includes(place.id)?p.required.filter(id=>id!==place.id):[...(p.required??[]),place.id],excluded:p.excluded.filter(id=>id!==place.id)}))}/><span>{place.name}<small>{place.district}</small></span></label>)}</div></details>
               <fieldset><legend>{c.pace}</legend><div className="rp-segment">{(["relaxed", "balanced", "full"] as const).map(i => <button key={i} type="button" className={draft.pace === i ? "selected" : ""} aria-pressed={draft.pace === i} onClick={() => change("pace", i)}>{c[i]}</button>)}</div></fieldset>
               <label>{c.meal}<select value={draft.meal} onChange={e => change("meal", e.target.value as Preferences["meal"])}>{(["local", "vegetarian", "picnic"] as const).map(i => <option key={i} value={i}>{c[i]}</option>)}</select></label>
@@ -227,6 +235,7 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
           <div className="rp-result-title"><div><span>{c.demo}</span><h2>{c.ready}</h2></div><span className="rp-result-count">{result.plans.length} <Route size={19} aria-hidden="true" /></span></div>
           <div role="status" aria-live="polite" className={notice ? "rp-status" : "sr-only"}>{notice}</div>
           {shareFallback && <label className="rp-share-fallback">{c.share}<input readOnly value={shareFallback} onFocus={e => e.target.select()} /></label>}
+          {applied.events?.length ? <div className="ev-route-notes"><CalendarDays size={18}/><div><strong>{ec.menu} · {applied.events.length}</strong><p>{ec.routingHint}</p>{eventsLoading&&<small>{ec.loading}</small>}{eventsFailed&&<small>{ec.offline}</small>}{result.eventIssues?.map((issue,i)=><p role="status" className="ev-notice" key={i}>{eventIssueText(issue.code,locale)}</p>)}</div></div>:null}
           {dirty && <div className="rp-dirty rp-no-print"><span>{c.dirty}</span><button type="button" onClick={() => calculate(draft)}>{c.update}<ArrowRight size={16} aria-hidden="true" /></button></div>}
           {result.plans.length > 0 && result.plans.length < applied.alternatives && <p className="rp-small-note">{c.fewer}</p>}
           {result.plans.length === 0 ? <div className="rp-empty"><Compass size={40} aria-hidden="true" /><h3>{c.empty}</h3><p>{applied.mode === "transit" ? tc.noMatch : c.emptyHint}</p>{result.unavailableDistricts.length > 0 && <p>{c.unavailableDistricts}: <strong>{result.unavailableDistricts.join(" · ")}</strong></p>}<button type="button" className="rp-edit-preferences" onClick={() => goToStep(0)}>{c.editPreferences}</button>{applied.mode === "transit" && <button type="button" className="rp-edit-preferences" onClick={() => calculate({ ...applied, start:360,end:1140 })}>{tc.early}</button>}<button type="button" className="rp-primary" onClick={() => calculate(defaults)}>{c.reset}</button></div> : <>
@@ -245,22 +254,22 @@ export function RoutePlanner({ locale = "tr" }: { locale?: Locale }) {
                     const isPacked = applied.meal === "picnic" || !food;
                     const entryKey = `${di}-${item.id}`;
                     const localDiscoveries = discoveryMap[item.id] ?? [];
-                    const title = stop?.name ?? (item.kind === "return" ? c.return : isPacked ? `${c.packed} · ${zoneNames[item.zone]}` : food!.name);
-                    const meta = stop?.district ?? (item.kind === "return" ? zoneNames[dayPlan.origin] : `${item.id.endsWith("dinner") ? c.dinner : c.lunch} · ${item.end - item.start} ${c.min}`);
+                    const title = item.event?.title ?? stop?.name ?? (item.kind === "return" ? c.return : isPacked ? `${c.packed} · ${zoneNames[item.zone]}` : food!.name);
+                    const meta = item.event?.venue ?? stop?.district ?? (item.kind === "return" ? zoneNames[dayPlan.origin] : `${item.id.endsWith("dinner") ? c.dinner : c.lunch} · ${item.end - item.start} ${c.min}`);
                     return <div key={`${item.id}-${i}`} className={`rp-timeline-item rp-${item.kind}`}>
                       <div className="rp-leg"><span>~{item.leg.km} km · {item.leg.minutes} {c.min}{item.leg.rest > 0 ? ` · ${item.leg.rest} ${c.min} ${c.rest}` : ""}</span>{item.leg.km > 0 && <a href={legMapUrl(item.leg.from, item.leg.to, dayPrefs)} target="_blank" rel="noreferrer" aria-label={c.routeLink} title={c.routeLink}><ExternalLink size={15} aria-hidden="true" /></a>}</div>
                       <TransitJourneyCard leg={item.leg} locale={locale} returning={item.kind === "return"}/>
                       {item.wait > 0 && <p className="rp-wait">{item.wait} {c.min} · {c.wait}</p>}
                       <div className="rp-timeline-content">
                         <div className="rp-time"><time>{clock(item.start)}</time>{item.kind !== "return" && <span>{clock(item.end)}</span>}</div>
-                        <div className="rp-marker">{item.kind === "meal" ? <Utensils size={18} aria-hidden="true" /> : item.kind === "return" ? <MapPin size={18} aria-hidden="true" /> : dayPlan.items.slice(0, i + 1).filter(x => x.kind === "visit").length}</div>
+                        <div className="rp-marker">{item.kind === "event" ? <CalendarDays size={18} aria-hidden="true"/> : item.kind === "meal" ? <Utensils size={18} aria-hidden="true" /> : item.kind === "return" ? <MapPin size={18} aria-hidden="true" /> : dayPlan.items.slice(0, i + 1).filter(x => x.kind === "visit").length}</div>
                         <details className="rp-stop-body rp-stop-disclosure" open={!compact || expandedStop === entryKey}>
                           <summary onClick={e => { e.preventDefault(); if (compact) setExpandedStop(expandedStop === entryKey ? null : entryKey); }}>
                             <span className="rp-district">{meta}</span><strong>{title}</strong>{localDiscoveries.length>0 && <span className="rp-discovery-badge">{discoveryBadge(localDiscoveries,locale)}</span>}<ChevronDown className="rp-stop-chevron" size={17} aria-hidden="true" />
                           </summary>
                           <div className="rp-stop-detail">
                             <div className="rp-detail-journey"><span>~{item.leg.km} km · {item.leg.minutes} {c.min}{item.leg.rest > 0 ? ` · ${item.leg.rest} ${c.min} ${c.rest}` : ""}</span>{item.wait > 0 && <span>{item.wait} {c.min} · {c.wait}</span>}<a href={legMapUrl(item.leg.from, item.leg.to, dayPrefs)} target="_blank" rel="noreferrer">{c.routeLink}<ExternalLink size={14} aria-hidden="true" /></a><a href={phoneMapUrl(item.id, dayPrefs, platform)} target={platform === "android" ? undefined : "_blank"} rel="noreferrer">{c.phoneMap}<MapPin size={14} aria-hidden="true" /></a></div>
-                            {stop ? <><p>{stop.summary[locale]}</p><p className="rp-stop-note">{c[stop.note]}</p><div className="rp-stop-links"><a href={stop.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a><button type="button" className="rp-no-print" onClick={() => calculate({ ...applied, required: applied.required?.filter(id=>id!==stop.id), excluded: [...applied.excluded, stop.id] })} aria-label={`${c.remove}: ${stop.name}`}><Trash2 size={14} aria-hidden="true" />{c.remove}</button></div></> : item.kind === "meal" ? <><p>{applied.meal === "picnic" ? c.picnicNote : !food ? c.packedNote : food[applied.meal][locale]}</p>{!isPacked && <><a className="rp-restaurant-link" target="_blank" rel="noreferrer" href={mapSearch(`${food!.name} restoran`)}>{c.restaurants}<ExternalLink size={15} aria-hidden="true" /></a><p className="rp-stop-note">{c.mealNote}</p><a className="rp-food-source" href={food!.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a></>}</> : null}
+                            {item.kind==='event'&&item.event?<><p>{ec.arrival}: <strong>{clock(item.arrivalBy??item.start-20)}</strong></p>{item.estimatedEnd&&<p className="rp-stop-note">{ec.estimatedEnd}. {ec.estimate}</p>}<p>{ec.transfer}</p><p>{ec.staleSaved}</p><div className="rp-stop-links"><a href={item.event.sourceUrl} target="_blank" rel="noreferrer">{ec.source}<ExternalLink size={14}/></a><button type="button" onClick={()=>calculate({...applied,events:applied.events?.filter(id=>id!==item.event!.id)})}><Trash2 size={14}/>{ec.remove}</button></div></> : stop ? <><p>{stop.summary[locale]}</p><p className="rp-stop-note">{c[stop.note]}</p><div className="rp-stop-links"><a href={stop.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a><button type="button" className="rp-no-print" onClick={() => calculate({ ...applied, required: applied.required?.filter(id=>id!==stop.id), excluded: [...applied.excluded, stop.id] })} aria-label={`${c.remove}: ${stop.name}`}><Trash2 size={14} aria-hidden="true" />{c.remove}</button></div></> : item.kind === "meal" ? <><p>{applied.meal === "picnic" ? c.picnicNote : !food ? c.packedNote : food[applied.meal][locale]}</p>{!isPacked && <><a className="rp-restaurant-link" target="_blank" rel="noreferrer" href={mapSearch(`${food!.name} restoran`)}>{c.restaurants}<ExternalLink size={15} aria-hidden="true" /></a><p className="rp-stop-note">{c.mealNote}</p><a className="rp-food-source" href={food!.source} target="_blank" rel="noreferrer">{c.source}<ExternalLink size={14} aria-hidden="true" /></a></>}</> : null}
                             <RouteDiscoveries key={entryKey} items={localDiscoveries} locale={locale} area={`${zoneNames[item.zone]}, Eskişehir`}/>
                           </div>
                         </details>
