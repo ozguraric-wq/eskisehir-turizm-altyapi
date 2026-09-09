@@ -14,7 +14,7 @@ export const visitSchema=z.object({placeId:z.string().refine(id=>Object.hasOwn(p
 export interface Statement {bind(...values:unknown[]):Statement;first<T=Record<string,unknown>>():Promise<T|null>;all<T=Record<string,unknown>>():Promise<{results:T[]}>;run():Promise<{meta?:{changes?:number}}>;}
 export interface Database {prepare(sql:string):Statement;batch(statements:Statement[]):Promise<unknown[]>;}
 export interface Bucket {put(key:string,body:ReadableStream|ArrayBuffer,options?:unknown):Promise<unknown>;get(key:string):Promise<{body:ReadableStream;httpMetadata?:{contentType?:string};size:number}|null>;delete(key:string|string[]):Promise<void>;}
-export interface SocialEnv {DB?:Database;BUCKET?:Bucket;SOCIAL_SESSION_SECRET?:string;SOCIAL_ADMIN_IDS?:string;SOCIAL_ADMIN_EMAILS?:string;SOCIAL_PUBLIC_ORIGIN?:string;SOCIAL_WEB_ORIGIN?:string;GOOGLE_CLIENT_ID?:string;GOOGLE_CLIENT_SECRET?:string;FACEBOOK_CLIENT_ID?:string;FACEBOOK_CLIENT_SECRET?:string;FACEBOOK_GRAPH_VERSION?:string;OPENAI_API_KEY?:string;}
+export interface SocialEnv {SOCIAL_DEMO_MODE?:string;DB?:Database;BUCKET?:Bucket;SOCIAL_SESSION_SECRET?:string;SOCIAL_ADMIN_IDS?:string;SOCIAL_ADMIN_EMAILS?:string;SOCIAL_PUBLIC_ORIGIN?:string;SOCIAL_WEB_ORIGIN?:string;GOOGLE_CLIENT_ID?:string;GOOGLE_CLIENT_SECRET?:string;FACEBOOK_CLIENT_ID?:string;FACEBOOK_CLIENT_SECRET?:string;FACEBOOK_GRAPH_VERSION?:string;OPENAI_API_KEY?:string;}
 export interface Identity {id:string;tokenHash?:string;admin:boolean;}
 export class ApiError extends Error {constructor(public code:string,public status=400){super(code);}}
 export const nowIso=()=>new Date().toISOString();

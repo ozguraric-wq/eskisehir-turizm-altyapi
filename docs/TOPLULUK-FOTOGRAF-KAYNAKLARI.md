@@ -1,0 +1,12 @@
+# Topluluk demo fotoğrafları
+
+Aşağıdaki gerçek fotoğraflar, temsili demo galerilerinde kullanılır. Demo kullanıcıların çektiği fotoğraflar değildir. Her türev aynı CC BY-SA lisansını korur. Dosyalar yönlendirilmiş, küçültülmüş ve WebP biçimine dönüştürülmüştür; konular değiştirilmemiştir.
+
+- **Midas Anıtı, Yazılıkaya** — Zeynel Cebeci · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) · [Kaynak](https://commons.wikimedia.org/wiki/File:Midas_Monument,_Yaz%C4%B1l%C4%B1kaya.jpg). `public/media/community/han-midas.webp` ve `han-midas-thumb.webp`.
+- **Seyit Battal Gazi Külliyesi** — Zeynel Cebeci · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) · [Kaynak](https://commons.wikimedia.org/wiki/File:Mosque_and_Tomb,_Seyit_Battal_Gazi_K%C3%BClliyesi.jpg). `public/media/community/seyitgazi-battal-gazi.webp` ve `seyitgazi-battal-gazi-thumb.webp`.
+- **Sivrihisar Ulu Camii** — Dosseman · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) · [Kaynak](https://commons.wikimedia.org/wiki/File:Sivrihisar_Ulu_Camii_2055.jpg). `public/media/community/sivrihisar-ulu-camii.webp` ve `sivrihisar-ulu-camii-thumb.webp`.
+- **Sakarıbaşı** — Zemxer · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) · [Kaynak](https://commons.wikimedia.org/wiki/File:Sakar%C4%B1ba%C5%9F%C4%B1.jpg). `public/media/community/cifteler-sakaribasi.webp` ve `cifteler-sakaribasi-thumb.webp`.
+- **Gürleyik Değirmen Şelalesi** — Honacan · [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) · [Kaynak](https://commons.wikimedia.org/wiki/File:G%C3%BCrleyik_De%C4%9Firmen_%C5%9Eelalesi.JPG). `public/media/community/mihaliccik-gurleyik.webp` ve `mihaliccik-gurleyik-thumb.webp`.
+- **İnönü panoraması** — Özkan Yörükoğlu · [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) · [Kaynak](https://commons.wikimedia.org/wiki/File:%C4%B0n%C3%B6n%C3%BC-panoramik.jpg). `public/media/community/inonu-panorama.webp` ve `inonu-panorama-thumb.webp`.
+- **Porsuk, Adalar** — Raicem · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) · [Kaynak](https://commons.wikimedia.org/wiki/File:View_of_Porsuk_River_in_Adalar,_Odunpazar%C4%B1,_Eski%C5%9Fehir.jpg). `public/media/community/eskisehir-porsuk.webp` ve `eskisehir-porsuk-thumb.webp`.
+- **Odunpazarı evleri** — CeeGee · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) · [Kaynak](https://commons.wikimedia.org/wiki/File:Odunpazar%C4%B1_(4).jpg). `public/media/community/odunpazari-houses.webp` ve `odunpazari-houses-thumb.webp`.

@@ -16,13 +16,13 @@ class Statement{constructor(sql,args=[]){this.sql=sql;this.args=args;}bind(...ar
 const db={prepare:sql=>new Statement(sql),batch:async statements=>{sqlite.exec('BEGIN');try{const result=statements.map(s=>({meta:{changes:Number(sqlite.prepare(s.sql).run(...s.args).changes)}}));sqlite.exec('COMMIT');return result;}catch(e){sqlite.exec('ROLLBACK');throw e;}}};
 const objects=new Map(),bucket={put:async(key,body)=>{objects.set(key,new Uint8Array(await new Response(body).arrayBuffer()));},get:async key=>{const b=objects.get(key);return b?{body:new Response(b).body,size:b.length}:null;},delete:async keys=>{for(const key of Array.isArray(keys)?keys:[keys])objects.delete(key);},list:async()=>({objects:[...objects.keys()]})};
 globalThis.FixedLengthStream=class{constructor(){const t=new TransformStream();this.readable=t.readable;this.writable=t.writable;}};
-const env={DB:db,BUCKET:bucket,SOCIAL_SESSION_SECRET:'local-test-secret-not-a-production-credential',SOCIAL_ADMIN_IDS:ADMIN};
+const env={SOCIAL_DEMO_MODE:'false',DB:db,BUCKET:bucket,SOCIAL_SESSION_SECRET:'local-test-secret-not-a-production-credential',SOCIAL_ADMIN_IDS:ADMIN};
 const mf={dispatchFetch:async(url,options)=>worker.fetch(new Request(url,options),env),getR2Bucket:async()=>bucket};
 after(async()=>{sqlite.close();await rm(dir,{recursive:true,force:true});});
 for(const file of (await readdir('drizzle')).filter(f=>f.endsWith('.sql')).sort()){const sql=await readFile('drizzle/'+file,'utf8');for(const part of sql.split('--> statement-breakpoint').map(x=>x.trim()).filter(Boolean))await db.prepare(part).run();}
 await db.prepare("INSERT INTO social_profiles(id,handle,name,status,created_at) VALUES (?,?,?,'approved',?)").bind(ADMIN,'test_reviewer','Test reviewer',new Date().toISOString()).run();
 await db.prepare('INSERT INTO social_sessions(hash,user_id,expires) VALUES (?,?,?)').bind(createHash('sha256').update(adminToken).digest('base64url'),ADMIN,Date.now()+600000).run();
-const pure=await build({stdin:{contents:"export * from './lib/routing/engine.ts';export * from './lib/social/demo-services.ts';export * from './lib/tourism/knowledge.ts';export * from './lib/tourism/camping.ts';export * from './lib/tourism/assistant.ts';export * from './lib/social/moderation.ts';",resolveDir:process.cwd(),sourcefile:'social-pure.ts'},bundle:true,format:'esm',target:'es2022',write:false,platform:'node'});await writeFile(join(dir,'pure.mjs'),pure.outputFiles[0].text);const data=await import(pathToFileURL(join(dir,'pure.mjs')));
+const pure=await build({stdin:{contents:"export * from './lib/routing/engine.ts';export * from './lib/social/demo-services.ts';export * from './lib/social/demo.ts';export * from './lib/social/demo-media.ts';export * from './lib/tourism/knowledge.ts';export * from './lib/tourism/camping.ts';export * from './lib/tourism/assistant.ts';export * from './lib/social/moderation.ts';",resolveDir:process.cwd(),sourcefile:'social-pure.ts'},bundle:true,format:'esm',target:'es2022',write:false,platform:'node'});await writeFile(join(dir,'pure.mjs'),pure.outputFiles[0].text);const data=await import(pathToFileURL(join(dir,'pure.mjs')));
 let ip=1;async function api(path,method='GET',body,token,extra={}){const headers={'Origin':'https://ozguraric-wq.github.io','CF-Connecting-IP':`192.0.2.${ip++}`,...(token?{Authorization:'Bearer '+token}:{}),...extra};if(body!==undefined)headers['Content-Type']='application/json';const r=await mf.dispatchFetch('https://community.test/api/community'+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});const text=await r.text();let payload;try{payload=JSON.parse(text);}catch{payload=text;}return {status:r.status,data:payload,headers:r.headers};}
 let alice,bob,postId,mediaId;
 const preferences=data.normalizePreferences({days:1,mode:'car',startMode:'district',interests:['phrygia'],date:'2026-09-12'}),plan=data.generatePlans(preferences).plans[0];
@@ -82,4 +82,45 @@ test('account deletion revokes sessions and removes owned media and related data
  assert.equal((await api('/me','DELETE',{confirm:'DELETE'},alice)).status,200);assert.equal((await api('/me','GET',undefined,alice)).data.profile,null);
  assert.equal((await db.prepare('SELECT COUNT(*) n FROM social_posts WHERE id=?').bind(postId).first()).n,0);assert.equal((await db.prepare('SELECT COUNT(*) n FROM social_media WHERE id=?').bind(mediaId).first()).n,0);
  const bucket=await mf.getR2Bucket('BUCKET');assert.equal((await bucket.list()).objects.length,0);
+});
+
+test('open demo imports exactly 20 routes, 60 comments and 10 places idempotently across all 14 districts',async()=>{
+ env.SOCIAL_DEMO_MODE='true';
+ assert.equal((await api('/status')).data.demoMode,true);
+ const first=await api('/posts'),second=await api('/posts?page=1'),again=await api('/posts');
+ assert.equal(first.status,200,JSON.stringify(first.data));assert.equal(first.data.posts.length,12);assert.equal(second.data.posts.length,8);assert.equal(second.data.hasMore,false);assert.equal(again.data.total,20);
+ const posts=[...first.data.posts,...second.data.posts];assert.equal(new Set(posts.map(p=>p.id)).size,20);assert.equal(new Set(posts.flatMap(p=>p.districts)).size,14);assert.ok(posts.every(p=>p.demo&&p.commentCount===3&&p.likes>0&&p.ratingCount>0));
+ assert.equal((await db.prepare("SELECT COUNT(*) n FROM social_comments WHERE user_id LIKE 'demo:seed:%'").first()).n,60);
+ assert.equal((await api('/trends')).data.places.length,10);assert.ok((await api('/trends')).data.places.every(p=>p.demo&&p.visitors===0));
+ assert.ok(posts.filter(p=>p.media.length).length>=8);for(const p of posts)for(const m of p.media){assert.ok(m.demo&&m.source.startsWith('https://commons.wikimedia.org/')&&m.license.startsWith('CC BY-SA'));assert.ok((await readFile('public'+m.url)).length>1000);}
+ assert.ok((await api('/posts?district=Han')).data.posts.every(p=>p.districts.includes('Han')));assert.ok((await api('/posts?mode=bicycle')).data.posts.every(p=>p.mode==='bicycle'));
+ assert.ok((await api('/posts?q=FR%C4%B0GYA')).data.posts.length>=2);assert.equal((await api('/posts?q=nonsenseroute')).data.posts.length,0);
+ // Curated stops remain compatible with actual routing constraints, rather than decorative cards.
+ for(const route of data.demoRoutes){const generated=data.generatePlans(route.preferences);assert.ok(generated.plans.length,route.title+' cannot be adapted');assert.ok(route.placeIds.every(id=>generated.plans[0].days.flatMap(d=>d.placeIds).includes(id)),route.title+' must preserve every stop');}
+});
+
+test('demo needs no signup, yet sessions isolate votes, comments, media, requests and kit without admin access',async()=>{
+ env.SOCIAL_DEMO_MODE='true';const a=await api('/auth/demo','POST',{}),b=await api('/auth/demo','POST',{});assert.equal(a.status,201);assert.equal(b.status,201);const ta=a.data.token,tb=b.data.token;
+ const me=(await api('/me','GET',undefined,ta)).data.profile;assert.equal(me.demo,true);assert.equal(me.admin,false);assert.ok(me.id.startsWith('demo:'));assert.equal((await api('/admin/queue','GET',undefined,ta)).status,403);
+ assert.equal((await api('/auth/register','POST',{handle:'demo_try',name:'Test Demo',bio:'',password:'test-long-password',acceptedRules:true})).status,409);
+ const id=data.demoRoutes[0].id,base=data.demoRoutes[0].likes;
+ for(let n=0;n<2;n++)assert.equal((await api('/posts/'+id+'/vote','PUT',{liked:true,rating:5},ta)).data.post.likes,base+1);
+ assert.equal((await api('/posts/'+id,'GET',undefined,tb)).data.post.likes,base);assert.equal((await api('/posts/'+id,'GET',undefined,ta)).data.post.myVote.liked,true);
+ assert.equal((await api('/posts/'+id+'/comments','POST',{body:'Demo rotayı deniyorum.'},ta)).status,201);
+ assert.equal((await api('/posts/'+id+'/comments','GET',undefined,ta)).data.comments.length,4);assert.equal((await api('/posts/'+id+'/comments','GET',undefined,tb)).data.comments.length,3);
+ assert.equal((await api('/posts/'+id+'/comments','POST',{body:'example@example.com'},ta)).status,400);
+ for(const action of [{kind:'place',ref:'midas',selected:true},{kind:'check',ref:'water',selected:true}])assert.equal((await api('/kit','PUT',action,ta)).status,200);
+ assert.deepEqual((await api('/kit','GET',undefined,ta)).data,{favorites:['midas'],checked:['water']});assert.deepEqual((await api('/kit','GET',undefined,tb)).data,{favorites:[],checked:[]});
+ assert.equal((await api('/kit','PUT',{kind:'place',ref:'imaginary-site',selected:true},ta)).status,400);
+ const r=await api('/posts','POST',{title:'Benim demo keşfim',body:'Özel deneme paylaşımı.',preferences,planId:plan.id,acceptedRules:true},ta);assert.equal(r.status,201);const own=r.data.id;
+ assert.equal((await api('/posts/'+own,'GET',undefined,ta)).data.post.demo,true);assert.equal((await api('/posts/'+own,'GET',undefined,tb)).status,404);
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+yEukAAAAASUVORK5CYII=','base64');const upload=await mf.dispatchFetch('https://community.test/api/community/posts/'+own+'/media',{method:'POST',headers:{Authorization:'Bearer '+ta,'Content-Type':'image/png','Content-Length':String(png.length)},body:png});assert.equal(upload.status,201,await upload.clone().text());const media=(await upload.json()).id;
+ assert.equal((await api('/media/'+media,'GET',undefined,ta)).status,200);assert.equal((await api('/media/'+media,'GET',undefined,tb)).status,404);
+ const date=new Date(Date.now()+86400000).toISOString().slice(0,10);assert.equal((await api('/requests','POST',{kind:'guide',district:'Han',listingId:null,date,time:'10:00',people:2,language:'tr',note:'Demo',acknowledgedDemo:true},ta)).data.delivered,false);
+ assert.equal((await api('/requests','GET',undefined,ta)).data.requests.length,1);assert.equal((await api('/requests','GET',undefined,tb)).data.requests.length,0);
+ const resumed=await api('/auth/demo','POST',{},ta);assert.equal((await api('/me','GET',undefined,resumed.data.token)).data.profile.id,me.id);
+ assert.equal((await api('/me','DELETE',{confirm:'DELETE'},ta)).status,200);assert.equal((await api('/me','GET',undefined,ta)).data.profile,null);assert.equal((await db.prepare('SELECT COUNT(*) n FROM social_kit WHERE user_id=?').bind(me.id).first()).n,0);assert.equal(objects.size,0);
+ assert.equal((await api('/posts')).data.total,20);assert.equal((await api('/posts/'+id+'/comments')).data.comments.length,3);
+ // Switching to real mode never recycles bot activity into genuine popularity metrics.
+ env.SOCIAL_DEMO_MODE='false';assert.equal((await api('/me','GET',undefined,tb)).data.profile,null);assert.equal((await api('/kit','GET',undefined,tb)).status,401);assert.equal((await api('/posts')).data.posts.length,0);assert.equal((await api('/trends')).data.places.length,0);assert.equal((await api('/posts/'+id)).status,404);assert.equal((await api('/auth/demo','POST',{})).status,404);
 });

@@ -1,4 +1,5 @@
 import {ApiError,type SocialEnv,type Identity,nowIso} from './server-contract';
+import {readableDemoPost} from './server-demo';
 import {screenText} from './moderation';
 declare const FixedLengthStream:{new(length:number):{writable:WritableStream<Uint8Array>;readable:ReadableStream<Uint8Array>}};
 const maxImage=8*1024*1024,maxVideo=25*1024*1024;
@@ -25,7 +26,7 @@ export async function uploadMedia(request:Request,env:SocialEnv,post:Record<stri
 }
 export async function readMedia(env:SocialEnv,id:string,identity:Identity|null,headers:Headers){
  const row=await env.DB!.prepare('SELECT m.*,p.status post_status FROM social_media m JOIN social_posts p ON p.id=m.post_id WHERE m.id=?').bind(id).first<Record<string,any>>();
- if(!row||row.status==='deleted'||row.post_status==='deleted'||!(identity?.admin||row.user_id===identity?.id||row.status==='approved'&&row.post_status==='approved'))throw new ApiError('not_found',404);
+ if(!row||!readableDemoPost(row as {user_id:string},identity,env)||row.status==='deleted'||row.post_status==='deleted'||!(identity?.admin||row.user_id===identity?.id||row.status==='approved'&&row.post_status==='approved'))throw new ApiError('not_found',404);
  if(!env.BUCKET)throw new ApiError('media_unavailable',503);const object=await env.BUCKET.get(row.object_key);if(!object)throw new ApiError('not_found',404);
  const out=new Headers(headers);out.set('Content-Type',row.mime);out.set('Content-Length',String(object.size));out.set('Cache-Control','private, no-store');out.set('Content-Disposition','inline');out.set('Content-Security-Policy',"default-src 'none'");return new Response(object.body,{headers:out});
 }

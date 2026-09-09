@@ -53,3 +53,5 @@ next-env.d.ts
 /mobile/ios/App/Pods/
 /mobile/ios/DerivedData/
 /mobile/backend-dist/
+
+*.tsbuildinfo

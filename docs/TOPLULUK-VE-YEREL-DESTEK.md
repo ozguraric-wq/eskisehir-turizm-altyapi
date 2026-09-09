@@ -1,3 +1,22 @@
+# Açık demo · Eskişehir Cebimde 1.3
+
+9 Eylül 2026 güncellemesi:
+
+- Ziyaretçilerden profil, kullanıcı adı, parola, e-posta veya sosyal hesap istenmez. Anonim bir demo oturumu otomatik açılır. Ratel kurumsal karşılama ekranı ve yönetici yetkilendirmesi korunur.
+- 14 ilçeyi kapsayan 20 örnek rota, 10 öne çıkan yer, 60 kurgusal bot yorumu, örnek beğeni/puanlar ve 8 kaynaklı gerçek fotoğraf eklenmiştir. Topluluk başlığının altında, kartlarda ve kaynak alanında demo niteliği açıkça yazılıdır. Fotoğraflar botların seyahat kanıtı değildir; lisansları `TOPLULUK-FOTOGRAF-KAYNAKLARI.md` dosyasında ve uygulamada yer alır.
+- Örnekler gerçek rota motoruyla uyarlanabilir. Yürüyüş ve bisiklet örnekleri belirtilen yerel başlangıç noktasındadır; şehre/ilçeye geliş ayrıca planlanır. Örnek programlar canlı çalışma saati veya rezervasyon garantisi değildir.
+- Her ziyaretçi beğeni, puan, yorum, fotoğraf/video içeren rota paylaşımı ve rehber/ev talebini kayıt olmadan dener. Yeni paylaşım ve yorumlar kendi oturumuna ve yetkili inceleme ekibine görünür; başka ziyaretçinin akışına otomatik yayımlanmaz. Metin ve medya kontrolleri korunur.
+- Örnek beğenilere yalnızca o ziyaretçinin denemesi eklenir. Bot verileri, gerçek topluluk sıralaması ve ziyaret istatistiğinden tamamen ayrıdır. Demo örneklerini başkası düzenleyemez/silemez; yönetim yetkisi sunucuda doğrulanır.
+- Gezi çantası: durak ve şehir rehberinden istenen yerleri saklama, sekiz maddelik hazırlık listesi, kendi deneme paylaşımlarını/taleplerini görme ve tek işlemle demo verilerini silme. D1 kalıcı kayıtları kullanılır; kişisel oturumlar ayrı tutulur. Silme, paylaşılan örnekleri ve cihazdaki çevrimdışı gezi dosyalarını etkilemez.
+- Rota araması Türkçe harf ve büyük/küçük harfleri normalize eder; ilçe, ulaşım ve beğeni sıralamasıyla birlikte çalışır. Akış 12 kartlık sayfalarla yüklenir. Fotoğraflar yerel olarak paketlenir; kaynak ve lisans bağlantıları mevcuttur.
+- Teknik anonim oturum erişimi 7 gün geçerlidir. Tarayıcıda sekme oturumu, Android/iOS uygulamasında mevcut güvenli kasa korunur. Profil olmadan cihazlar arası kurtarma yoktur. Yeni oturum başlatmak eski hesabı değiştirmez.
+- `SOCIAL_DEMO_MODE=false` sunucu ayarı, korunmuş gerçek üyelik akışını geri açar. Varsayılan `true` değeridir. Sabit örnek veri, şema oluşturma komutlarıyla değil idempotent uygulama içe aktarımıyla yüklenir. Yeni şema: `social_demo_seeds`, `social_kit`.
+- Rehber/ev talepleri hâlâ demo: hizmet sağlayıcıya iletilmez, ödeme veya gerçek rezervasyon oluşturmaz. Yapay zekâ ve sosyal giriş sağlayıcıları, gerekli kurum bağlantıları/anahtarları kurulmadığı sürece etkinmiş gibi gösterilmez.
+
+Doğrulama: gerçek API işlemleri üzerinde profil gerektirmeyen erişim; 20/10/60 sayıları; tüm 14 ilçe ve uyarlanabilir rota durakları; filtreler; içerik filtresi; oturumlar arası gizlilik; medya ve silme; gerçek istatistiklere demo sızıntısı; mevcut rota ve mobil sözleşmeleri.
+
+---
+
 # Eskişehir Cebimde · topluluk ve yerel destek
 
 9 Eylül 2026 · Mobil 1.2

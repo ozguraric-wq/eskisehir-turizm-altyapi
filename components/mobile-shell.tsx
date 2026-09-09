@@ -7,6 +7,8 @@ import { Sheet,SheetContent,SheetTitle,SheetDescription,SheetClose } from "@/com
 import { Button } from "@/components/ui/button";
 import { isNativeApp } from "@/lib/mobile/native";
 import { mobileCopy } from "@/lib/mobile/copy";
+import {useSocial} from "./social-provider";
+import { Backpack } from "lucide-react";
 import { socialCopy } from "@/lib/social/copy";
 import { qrCopy } from "@/lib/qr/copy";
 import { parseQrInput,targetPath } from "@/lib/qr/links";
@@ -15,6 +17,7 @@ import type { Locale } from "@/lib/routing/types";
 import { MobileHome } from "./mobile-home";
 const languages=[['tr','Türkçe'],['en','English'],['de','Deutsch'],['fr','Français'],['ar','العربية']] as const;
 export function MobileShell(){
+  const {status}=useSocial();
   const pathname=usePathname(),router=useRouter(),first=pathname.split("/").filter(Boolean)[0];
   const locale=(["en","de","fr","ar"].includes(first)?first:"tr") as Locale;
   const c=mobileCopy(locale),q=qrCopy(locale),sc=socialCopy(locale),base=locale==="tr"?"":`/${locale}`;
@@ -38,7 +41,7 @@ export function MobileShell(){
   },[router]);
   useEffect(()=>{if(enabled){try{localStorage.setItem("etahb-app-language",locale);}catch{}}},[locale,enabled]);
   if(!enabled)return null;
-  const tabs=[{href:base||"/",label:q.home,Icon:Compass},{href:`${base}/rotani-olustur`,label:q.route,Icon:Route},{href:`${base}/qr`,label:q.scan,Icon:ScanLine,scan:true},{href:`${base}/topluluk`,label:sc.community,Icon:Users},{href:`${base}/profil`,label:sc.profile,Icon:UserRound}];
+  const tabs=[{href:base||"/",label:q.home,Icon:Compass},{href:`${base}/rotani-olustur`,label:q.route,Icon:Route},{href:`${base}/qr`,label:q.scan,Icon:ScanLine,scan:true},{href:`${base}/topluluk`,label:sc.community,Icon:Users},{href:`${base}/profil`,label:status?.demoMode!==false?({tr:'Çantam',en:'My kit',de:'Reisetasche',fr:'Carnet',ar:'حقيبتي'}[locale]):sc.profile,Icon:status?.demoMode!==false?Backpack:UserRound}];
   function switchLanguage(lang:Locale){const leaf=pathname.replace(/^\/(en|de|fr|ar)(?=\/|$)/,"");const target=["/qr","/birlik","/rotani-olustur","/gezilerim","/lezzet-ve-miras","/topluluk","/profil","/hizmetler","/sehir-rehberi"].find(path=>leaf.replace(/\/$/,"")===path)??"";setLanguageOpen(false);router.push(`${lang==="tr"?"":`/${lang}`}${target||"/"}${target?location.hash:""}`);}
   const resetHome=()=>{setSection("");document.documentElement.dataset.appSection="";};
   return <><a className="skip-link" href={isHome&&!section?"#app-ana-icerik":"#ana-icerik"}>{q.skip}</a><header className="app-topbar" dir={locale==="ar"?"rtl":"ltr"}>{isHome&&!section?<Link className="app-wordmark" href={base||"/"} onClick={resetHome}><img src={siteAsset("/brand/logo-mark.webp")} alt="" width={32} height={40}/><span>Eskişehir <strong>Cebimde</strong></span></Link>:<><Link className="app-header-back" href={base||"/"} onClick={resetHome} aria-label={q.home}><ArrowLeft size={23}/></Link><Link className="app-wordmark compact" href={base||"/"} onClick={resetHome}>Eskişehir <strong>Cebimde</strong></Link></>}<Button type="button" variant="ghost" className="app-language-button" aria-label={q.language} onClick={()=>setLanguageOpen(true)}><Globe2 size={21}/><span>{locale.toUpperCase()}</span></Button></header>{offline&&<div className="app-offline" role="status" dir={locale==="ar"?"rtl":"ltr"}><WifiOff size={16}/>{c.offline}</div>}{isHome&&!section&&<MobileHome locale={locale}/>}<nav className="app-tabbar rp-no-print" aria-label={c.app} dir={locale==="ar"?"rtl":"ltr"}>{tabs.map(({href,label,Icon,scan})=>{const selected=href.includes("#")?section==="institution":!section&&pathname.replace(/\/$/,"")===href.replace(/\/$/,"");return <Link key={label} href={href} onClick={()=>{if(href===(base||"/"))resetHome();}} className={scan?"app-tab-scan":""} aria-current={selected?"page":undefined}><span className="app-tab-icon"><Icon size={23} aria-hidden="true"/></span><span>{label}</span></Link>;})}</nav><Sheet open={languageOpen} onOpenChange={setLanguageOpen}><SheetContent side="bottom" className="app-language-sheet" showCloseButton={false} dir={locale==="ar"?"rtl":"ltr"}><div className="qr-sheet-heading"><div><SheetTitle>{q.language}</SheetTitle><SheetDescription>Eskişehir Cebimde</SheetDescription></div><SheetClose asChild><Button variant="ghost" size="icon" aria-label={q.close}><X size={22}/></Button></SheetClose></div>{languages.map(([lang,name])=><Button type="button" key={lang} variant="ghost" className="app-language-choice" onClick={()=>switchLanguage(lang)} aria-current={lang===locale?"true":undefined}>{name}{lang===locale&&<Check size={19}/>}</Button>)}</SheetContent></Sheet></>;

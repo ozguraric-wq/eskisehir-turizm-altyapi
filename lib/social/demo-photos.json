@@ -1,0 +1,98 @@
+[
+  {
+    "id": "han-midas",
+    "title": "Midas Anıtı, Yazılıkaya",
+    "author": "Zeynel Cebeci",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Midas_Monument,_Yaz%C4%B1l%C4%B1kaya.jpg",
+    "photographed": "2015-02-07",
+    "changes": "Auto-oriented from EXIF, resized and converted to WebP; no subject changes.",
+    "altTr": "Yazılıkaya’daki Midas Anıtı’nın kayaya oyulmuş cephesi; zeminde yer yer kar.",
+    "suggestedObjectPosition": "50% 50%"
+  },
+  {
+    "id": "seyitgazi-battal-gazi",
+    "title": "Seyit Battal Gazi Külliyesi",
+    "author": "Zeynel Cebeci",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Mosque_and_Tomb,_Seyit_Battal_Gazi_K%C3%BClliyesi.jpg",
+    "photographed": "2015-02-07",
+    "changes": "Auto-oriented from EXIF, resized and converted to WebP; no subject changes.",
+    "altTr": "Seyitgazi’deki Seyit Battal Gazi Külliyesi’nin kubbeli cami ve türbe binaları.",
+    "suggestedObjectPosition": "50% 50%"
+  },
+  {
+    "id": "sivrihisar-ulu-camii",
+    "title": "Sivrihisar Ulu Camii",
+    "author": "Dosseman",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Sivrihisar_Ulu_Camii_2055.jpg",
+    "photographed": "2007-12-20",
+    "changes": "Auto-oriented from EXIF, resized and converted to WebP; no subject changes.",
+    "altTr": "Sivrihisar Ulu Camii’nin ahşap direkleri ve desenli halılarıyla iç mekânı.",
+    "suggestedObjectPosition": "50% 50%"
+  },
+  {
+    "id": "cifteler-sakaribasi",
+    "title": "Sakarıbaşı",
+    "author": "Zemxer",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Sakar%C4%B1ba%C5%9F%C4%B1.jpg",
+    "photographed": "2021-08-26",
+    "changes": "Auto-oriented from EXIF, resized and converted to WebP; no subject changes.",
+    "altTr": "Çifteler Sakarıbaşı’nda yeşil metal köprü korkuluğunun arkasındaki su ve ağaçlar.",
+    "suggestedObjectPosition": "50% 70%"
+  },
+  {
+    "id": "mihaliccik-gurleyik",
+    "title": "Gürleyik Değirmen Şelalesi",
+    "author": "Honacan",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:G%C3%BCrleyik_De%C4%9Firmen_%C5%9Eelalesi.JPG",
+    "photographed": null,
+    "changes": "Auto-oriented from EXIF, resized and converted to WebP; no subject changes.",
+    "altTr": "Gürleyik Değirmen Şelalesi’nde ağaçların arasından kayalara dökülen su.",
+    "suggestedObjectPosition": "50% 60%"
+  },
+  {
+    "id": "inonu-panorama",
+    "title": "İnönü panoraması",
+    "author": "Özkan Yörükoğlu",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:%C4%B0n%C3%B6n%C3%BC-panoramik.jpg",
+    "photographed": null,
+    "changes": "Auto-oriented from EXIF, resized and converted to WebP; no subject changes.",
+    "altTr": "İnönü’nün kırmızı çatılı binaları ve çevresindeki yeşil ovayı gösteren panorama.",
+    "suggestedObjectPosition": "50% 50%"
+  },
+  {
+    "id": "eskisehir-porsuk",
+    "title": "Porsuk, Adalar",
+    "author": "Raicem",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:View_of_Porsuk_River_in_Adalar,_Odunpazar%C4%B1,_Eski%C5%9Fehir.jpg",
+    "photographed": "2023-05-01",
+    "changes": "Auto-oriented from EXIF, resized and converted to WebP; no subject changes.",
+    "altTr": "Adalar’da Porsuk Çayı, kıyıdaki yeşil alan, sokak lambası ve yaya köprüsü.",
+    "suggestedObjectPosition": "50% 50%"
+  },
+  {
+    "id": "odunpazari-houses",
+    "title": "Odunpazarı evleri",
+    "author": "CeeGee",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Odunpazar%C4%B1_(4).jpg",
+    "photographed": "2016-09-22",
+    "changes": "Auto-oriented from EXIF, resized and converted to WebP; no subject changes.",
+    "altTr": "Odunpazarı’nda mavi ve beyaz cepheli tarihi evler ile taş döşeli sokak.",
+    "suggestedObjectPosition": "50% 55%"
+  }
+]

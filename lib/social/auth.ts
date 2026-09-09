@@ -1,3 +1,4 @@
+import {demoEnabled,isDemoUser} from './demo';
 import {ApiError,type SocialEnv,type Identity,type Database,nowIso} from './server-contract';
 const encoder=new TextEncoder();
 export const base64url=(bytes:Uint8Array)=>btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
@@ -20,7 +21,7 @@ export async function identify(request:Request,env:SocialEnv,platform:'sites'|'s
  const platformEmail=platform==='sites'?request.headers.get('oai-authenticated-user-email')?.toLowerCase():null;
  const adminEmails=new Set((env.SOCIAL_ADMIN_EMAILS??'').toLowerCase().split(',').map(x=>x.trim()).filter(Boolean));
  const platformAdmin=!!platformId&&(admins.has('sites:'+platformId)||!!platformEmail&&adminEmails.has(platformEmail));
- if(token){const hash=await digest(token),r=await env.DB!.prepare('SELECT user_id FROM social_sessions WHERE hash=? AND expires>?').bind(hash,Date.now()).first<{user_id:string}>();if(r)return {id:r.user_id,tokenHash:hash,admin:admins.has(r.user_id)||platformAdmin};}
+ if(token){const hash=await digest(token),r=await env.DB!.prepare('SELECT user_id FROM social_sessions WHERE hash=? AND expires>?').bind(hash,Date.now()).first<{user_id:string}>();if(r&&(!isDemoUser(r.user_id)||demoEnabled(env)))return {id:r.user_id,tokenHash:hash,admin:admins.has(r.user_id)||platformAdmin};}
  if(platformAdmin)return {id:'sites:'+platformId,admin:true};
  return null;
 }
