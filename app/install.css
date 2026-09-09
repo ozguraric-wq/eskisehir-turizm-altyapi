@@ -1,0 +1,32 @@
+.app-install { width:min(780px,calc(100% - 32px)); margin:12px auto; color:var(--app-ink); }
+.app-install-card { display:grid; grid-template-columns:52px minmax(0,1fr) 44px; gap:10px 12px; align-items:center; padding:14px; background:#fff; border:1px solid var(--app-line); border-radius:18px; box-shadow:0 4px 20px #15212508; }
+.app-install-icon { width:52px; height:52px; border-radius:13px; object-fit:contain; }
+.app-install-copy { min-width:0; }
+.app-install-copy strong { display:block; font-size:1rem; line-height:1.4; }
+.app-install-copy p { margin:3px 0 0; color:var(--app-muted); font-size:.875rem; line-height:1.5; }
+.app-install button { min-height:44px; height:auto; font-size:.875rem; white-space:normal; }
+.app-install-dismiss { align-self:start; width:44px; }
+.app-install-actions { display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; grid-column:2/-1; }
+.app-install-primary { min-height:46px; height:auto; padding:12px 18px; border-radius:12px; background:var(--app-burgundy); color:white; white-space:normal; font-size:.9375rem; line-height:1.4; }
+.app-install-primary:hover { background:#5d0920; }
+.app-install-reminder { display:flex; justify-content:flex-end; }
+.app-install-reminder button { color:var(--app-burgundy); }
+.app-install-sheet { width:min(600px,100%); max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px)); margin-inline:auto; padding:24px 22px calc(24px + env(safe-area-inset-bottom,0px)); gap:20px; overflow-y:auto; overscroll-behavior:contain; background:white; color:var(--app-ink); border-radius:24px 24px 0 0; }
+.app-install-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.app-install-heading [data-slot=sheet-title] { color:var(--app-ink); font-size:1.25rem; line-height:1.4; }
+.app-install-heading [data-slot=sheet-description] { margin:8px 0 0; color:var(--app-muted); font-size:.9375rem; line-height:1.6; }
+.app-install-sheet button { min-height:44px; height:auto; white-space:normal; }
+.app-install-heading button { width:44px; flex-shrink:0; }
+.app-install-steps { display:grid; gap:20px; list-style:none; padding:0; margin:0; }
+.app-install-steps li { display:flex; align-items:flex-start; gap:14px; }
+.app-install-steps li > span { display:grid; place-items:center; flex-shrink:0; width:38px; height:38px; border-radius:12px; background:#f7edf0; color:var(--app-burgundy); font-size:1rem; font-weight:700; }
+.app-install-steps p { margin:3px 0 0; font-size:1rem; line-height:1.65; }
+.app-install-browser { display:grid; gap:12px; padding:16px; background:var(--app-surface); border:1px solid var(--app-line); border-radius:14px; }
+.app-install-browser p,.app-install-notice { margin:0; font-size:1rem; line-height:1.6; }
+.app-install-browser label { font-size:.875rem; font-weight:600; }
+.app-install-browser input { width:100%; min-width:0; border:1px solid #cad3d8; background:white; padding:12px; border-radius:10px; color:var(--app-ink); font-size:1rem; }
+.app-install-notice { padding:14px; border-radius:12px; background:#fff3d7; color:#614414; }
+.app-install :focus-visible,.app-install-sheet :focus-visible { outline:3px solid #ad804c; outline-offset:3px; }
+html.auth-pending .app-install { display:none; }
+@media(max-width:380px) { .app-install-card { grid-template-columns:44px minmax(0,1fr) 44px; gap:8px; padding:12px; }.app-install-icon { width:44px; height:44px; }.app-install-actions { grid-column:1/-1; }.app-install-sheet { padding-inline:18px; } }
+@media(display-mode:standalone),(display-mode:fullscreen),print { .app-install { display:none; } }

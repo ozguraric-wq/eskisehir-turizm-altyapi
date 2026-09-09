@@ -3,7 +3,7 @@ import { join,resolve } from "node:path";
 const native=process.argv[2]==="native";
 const root=resolve("out");
 const base=native?"":"/eskisehir-turizm-altyapi";
-const manifest={id:`${base}/`,name:"Eskişehir Turizm Altyapı Hizmet Birliği",short_name:"Eskişehir",description:"Birlik, 14 ilçede keşif, gezi planları ve yerel miras.",start_url:`${base}/?app=1`,scope:`${base}/`,display:"standalone",background_color:"#ffffff",theme_color:"#790d28",lang:"tr",icons:[{src:`${base}/brand/app-192.png`,sizes:"192x192",type:"image/png",purpose:"any"},{src:`${base}/brand/app-512.png`,sizes:"512x512",type:"image/png",purpose:"any"}]};
+const manifest={id:`${base}/`,name:"Eskişehir Cebimde",short_name:"Eskişehir Cebimde",description:"Eskişehir’de rotalar, QR keşif ve etkinlikler.",start_url:`${base}/?app=1`,scope:`${base}/`,display:"standalone",background_color:"#ffffff",theme_color:"#790d28",lang:"tr",icons:[{src:`${base}/brand/app-192.png`,sizes:"192x192",type:"image/png",purpose:"any"},{src:`${base}/brand/app-512.png`,sizes:"512x512",type:"image/png",purpose:"any"}]};
 await writeFile(join(root,"manifest.webmanifest"),JSON.stringify(manifest));
 if(process.env.NEXT_PUBLIC_AI_BASE_URL){const u=new URL(process.env.NEXT_PUBLIC_AI_BASE_URL);if(u.protocol!=="https:"||u.pathname!=="/"||u.username||u.password||u.search||u.hash)throw Error("AI base must be an HTTPS origin");await writeFile(join(root,"mobile-config.json"),JSON.stringify({apiBaseUrl:u.origin}));}
 if(native){

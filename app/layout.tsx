@@ -1,13 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { MobileShell } from "@/components/mobile-shell";
+import { AppInstall } from "@/components/app-install";
 import "./globals.css";
 import "./mobile.css";
 import "./qr.css";
 import "./social.css";
 import "./events.css";
+import "./install.css";
 import { SocialProvider } from "@/components/social-provider";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -41,10 +43,13 @@ export const metadata: Metadata = {
   icons: {
     icon: `${basePath}/favicon.svg`,
     shortcut: `${basePath}/favicon.svg`,
+    apple: `${basePath}/brand/app-192.png`,
   },
   manifest: `${basePath}/manifest.webmanifest`,
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "Eskişehir" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Eskişehir Cebimde" },
 };
+
+export const viewport: Viewport = { themeColor: "#790d28", viewportFit: "cover" };
 
 export default function RootLayout({
   children,
@@ -59,6 +64,7 @@ export default function RootLayout({
           Ana içeriğe geç
         </a>
         <SocialProvider><SiteHeader />
+        <AppInstall />
         <MobileShell />
         {children}
         <SiteFooter /></SocialProvider>

@@ -26,9 +26,9 @@ export function MobileShell(){
   useEffect(()=>{const sync=()=>{const hash=location.hash.slice(1);const value=isHome&&["institution","impact","heritage","programmes","routes"].includes(hash)?hash:"";setSection(value);document.documentElement.dataset.appSection=value;};sync();window.addEventListener("hashchange",sync);return()=>window.removeEventListener("hashchange",sync);},[pathname,isHome]);
   useEffect(()=>{
     const media=matchMedia("(display-mode: standalone)");
-    const sync=()=>{let preview=false;try{if(new URLSearchParams(location.search).get("app")==="1")sessionStorage.setItem("etahb-app-preview","1");preview=sessionStorage.getItem("etahb-app-preview")==="1";}catch{}const active=isNativeApp()||media.matches||preview||process.env.NEXT_PUBLIC_MOBILE_APP==="true";setEnabled(active);document.documentElement.toggleAttribute("data-mobile-app",active);};
+    const sync=()=>{let preview=false;try{if(new URLSearchParams(location.search).get("app")==="1")sessionStorage.setItem("etahb-app-preview","1");preview=sessionStorage.getItem("etahb-app-preview")==="1";}catch{}const active=isNativeApp()||media.matches||(navigator as Navigator & {standalone?:boolean}).standalone===true||preview||process.env.NEXT_PUBLIC_MOBILE_APP==="true";setEnabled(active);document.documentElement.toggleAttribute("data-mobile-app",active);};
     const online=()=>setOffline(!navigator.onLine);sync();online();media.addEventListener("change",sync);window.addEventListener("online",online);window.addEventListener("offline",online);
-    if("serviceWorker" in navigator&&!isNativeApp()&&process.env.NEXT_PUBLIC_GITHUB_PAGES==="true")navigator.serviceWorker.register(siteAsset("/sw.js"),{scope:siteAsset("/")}).catch(()=>{});
+    if("serviceWorker" in navigator&&!isNativeApp()&&window.isSecureContext)navigator.serviceWorker.register(siteAsset("/sw.js"),{scope:siteAsset("/")}).catch(()=>{});
     let disposed=false;const listeners:{remove:()=>Promise<void>}[]=[];
     if(isNativeApp())import("@capacitor/app").then(async({App})=>{
       const register=async(p:Promise<{remove:()=>Promise<void>}>)=>{const h=await p;if(disposed)h.remove();else listeners.push(h);};
