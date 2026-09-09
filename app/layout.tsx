@@ -6,6 +6,8 @@ import { MobileShell } from "@/components/mobile-shell";
 import "./globals.css";
 import "./mobile.css";
 import "./qr.css";
+import "./social.css";
+import { SocialProvider } from "@/components/social-provider";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const isGitHubPages = process.env.NEXT_PUBLIC_GITHUB_PAGES === "true";
@@ -55,10 +57,10 @@ export default function RootLayout({
         <a className="skip-link site-skip-link" href="#ana-icerik">
           Ana içeriğe geç
         </a>
-        <SiteHeader />
+        <SocialProvider><SiteHeader />
         <MobileShell />
         {children}
-        <SiteFooter />
+        <SiteFooter /></SocialProvider>
       </body>
     </html>
   );

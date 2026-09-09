@@ -1,0 +1,1492 @@
+[
+  {
+    "id": "ktb-342020",
+    "name": "Akpare Kale",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-342020/akpare-kale-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336957",
+    "name": "Deveboynu Kalesi",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336957/deveboynu-kalesi-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347279",
+    "name": "Doğanlı Kale",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347279/doganli-kale-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347237",
+    "name": "Bitmemiş Anıt",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347237/bitmemis-anit-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Midas yerleşiminin batısındaki kaya cephesi tamamlanmadan bırakılmıştır. Üçgen alınlığı ve kabartma bitkisel süslemeleri, Frig anıtlarının yapım sürecini okumaya imkân verir."
+  },
+  {
+    "id": "ktb-337004",
+    "name": "Çatalkaya",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337004/catalkaya-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336953",
+    "name": "Gökgöz Kale",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336953/gokgoz-kale-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336956",
+    "name": "Hamamkaya Frig Kaya Mezarı",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336956/hamamkaya-frig-kaya-mezari-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Gerdekkaya yakınındaki kaya mezarında birbirini izleyen iki oda bulunur. Girişin altındaki aşınmış kabartmalar, yapının dikkatle incelenebilen ayrıntılarıdır."
+  },
+  {
+    "id": "ktb-336959",
+    "name": "Dübecik Kale",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336959/dubecik-kale-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347377",
+    "name": "Gerdekkaya Mezar Anıtı",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347377/gerdekkaya-mezar-aniti-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Gerdekkaya, tapınak görünümündeki sütunlu cephesiyle ayırt edilen bir kaya mezarıdır. Helenistik dönemde yapılmış; Roma ve Bizans dönemlerinde yeniden kullanılmıştır."
+  },
+  {
+    "id": "ktb-336952",
+    "name": "Küçük Yazılıkaya (Areyastis Anıtı)",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336952/kucuk-yazilikaya-areyastis-aniti-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Areyastis Anıtı, Frigce yazıtları ve geometrik çerçeveleriyle öne çıkar. Adı yazıttaki bir sözcükten gelir; kaynakta Hasanbey Kayası adı da belirtilir."
+  },
+  {
+    "id": "ktb-336954",
+    "name": "Pişmiş Kale",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336954/pismis-kale-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Pişmiş Kale’de kayaya açılan odalar, erzak çukurları ve basamaklı sarnıç görülebilir. Kayalık yerleşim, Frig döneminin ardından yeniden savunma amacıyla kullanılmıştır."
+  },
+  {
+    "id": "ktb-337008",
+    "name": "Kırkgöz Kale",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337008/kirkgoz-kale-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337011",
+    "name": "Kocabaş Kale",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337011/kocabas-kale-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336887",
+    "name": "Porsuk Vadisi",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336887/porsuk-vadisi-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Porsuk Vadisi, kent çevresindeki doğal peyzajı kaya yerleşimleriyle bir araya getirir. Kaynak, Uluçayır, Gökçekısık ve Yenisofça çevresindeki farklı dönem kalıntılarını birlikte anlatır."
+  },
+  {
+    "id": "ktb-336889",
+    "name": "Yapıldak Vadisi",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336889/yapildak-vadisi-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Yapıldak Vadisi; kaya mezarlarını, Dübecik ve Ayterek kalelerini bir arada okumayı sağlar. Kaya yüzeylerinde farklı dönemlere ait yerleşim izleri bulunur."
+  },
+  {
+    "id": "ktb-336895",
+    "name": "Seyircek Kale",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336895/seyircek-kale-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336960",
+    "name": "Sümbüllü Anıt",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336960/sumbullu-anit-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Sümbüllü Anıt adını çatı tepesindeki sümbülü andıran bezemeden alır. Kaya cephesindeki niş ve kare düzenlemeler, Frig mimari tasvirinin ayrıntılarıdır."
+  },
+  {
+    "id": "ktb-336946",
+    "name": "Zahran Deresi Bizans Yerleşmesi",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336946/zahran-deresi-bizans-yerlesmesi-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336950",
+    "name": "Yazılıkaya Midas Anıtı",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336950/yazilikaya-midas-aniti-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Yazılıkaya, Friglerin kutsal kaya cephelerinden biridir. Geometrik süslemeler ve Frigce yazıtlarla birlikte merkezdeki niş dikkat çeker. Kaynak, bu nişi tanrıça Matar kültüyle ilişkilendirir."
+  },
+  {
+    "id": "ktb-336886",
+    "name": "Zahran Vadisi",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336886/zahran-vadisi-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336885",
+    "name": "Yazılıkaya Vadisi",
+    "region": "Dağlık Frigya",
+    "district": null,
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336885/yazilikaya-vadisi-daglik-frigya.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Han ilçesindeki Yazılıkaya Vadisi, Frig inanç merkezini ve çevresindeki kaya kalelerini birlikte barındırır. Midas yerleşimi, Gordion’un siyasi rolünden farklı olarak dinsel bir merkezdir."
+  },
+  {
+    "id": "ktb-336934",
+    "name": "Akdoğan Mescidi",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336934/akdogan-mescidi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336903",
+    "name": "Balaban Cami",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336903/balaban-cami-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336897",
+    "name": "Aziz Mahmud Hüdayi Camii",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336897/aziz-mahmud-hudayi-camii-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-342098",
+    "name": "Alemşah Kümbeti",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-342098/alemsah-kumbeti-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "1328 tarihli Alemşah Kümbeti, Sivrihisar Ulu Cami karşısındadır. İki katlı anıtın taş bezemelerinde geometrik geçmeler ve farklı simgesel motifler yer alır."
+  },
+  {
+    "id": "ktb-336999",
+    "name": "Doğan Aslan Mescidi",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336999/dogan-aslan-mescidi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337000",
+    "name": "Gümüşkonak",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337000/gumuskonak---germia-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336936",
+    "name": "Böğürtlen Balkayası (Frig Kaya Anıtı)",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336936/bogurtlen-balkayasi-frig-kaya-aniti-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Böğürtlen Balkayası’nda bir yapının ön yüzünü betimleyen Frig kaya anıtı bulunur. Kaynağın vurguladığı ayırt edici özellik, geometrik bezemelerdeki koyu kırmızı boyadır."
+  },
+  {
+    "id": "ktb-347129",
+    "name": "Balıkdamı Kuş Cenneti",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347129/balikdami-kus-cenneti-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Balıkdamı; sazlıkları ve küçük su yüzeyleriyle göçmen kuşlar için önemli bir sulak alandır. Doğa gözlemi, yaban hayatını rahatsız etmeden ve alan kurallarına uyarak planlanmalıdır."
+  },
+  {
+    "id": "ktb-336937",
+    "name": "Hamamkarahisar Camii",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336937/hamamkarahisar-camii-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Hamamkarahisar Camii, 1259 tarihli bir yapıdır. Ana ibadet mekânıyla giriş bölümünün birleşimi, mimarlık tarihi açısından kaynağın özellikle vurguladığı özelliktir."
+  },
+  {
+    "id": "ktb-348365",
+    "name": "Hızırbey Mescidi",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-348365/hizirbey-mescidi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336930",
+    "name": "Hoşkadem Camii",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336930/hoskadem-camii-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347696",
+    "name": "Hazinedar Mescidi",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347696/hazinedar-mescidi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336913",
+    "name": "İhsan Erdemgil Konağı",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336913/ihsan-erdemgil-konagi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336935",
+    "name": "Kılıç Minaresi",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336935/kilic-minaresi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337028",
+    "name": "Kumacık Hamamı",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337028/kumacik-hamami-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336929",
+    "name": "Kurşunlu Camii",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336929/kursunlu-camii-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336932",
+    "name": "Nasreddin Hoca'nın Evi",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336932/nasreddin-hoca39nin-evi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-460288",
+    "name": "M.S.Ö. Hava ve Uzay Müzesi",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-460288/mso-hava-ve-uzay-muzesi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Sivrihisar’daki M.S.Ö. Hava ve Uzay Müzesi tarihî hava araçlarına odaklanır. Koleksiyondaki bazı araçların uçabilir durumda olması, kurumun “uçan müze” yaklaşımını açıklar."
+  },
+  {
+    "id": "ktb-336910",
+    "name": "Saat Kulesi",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336910/saat-kulesi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336891",
+    "name": "Pessinus (Ballıhisar) Antik Kenti",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336891/pessinus-ballihisar-antik-kenti-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Ballıhisar’daki Pessinus, ana tanrıça kültü ve antik yol bağlantılarıyla önem kazanmış bir yerleşimdir. Kentin farklı dönemlerini arkeolojik araştırmalar ve müze koleksiyonları üzerinden izlemek mümkündür."
+  },
+  {
+    "id": "ktb-337002",
+    "name": "Seyyid Şeyh Mahmud Süzani Külliyesi",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337002/seyyid-seyh-mahmud-suzani-kulliyesi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336928",
+    "name": "Yunus Hoca Kümbeti",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336928/yunus-hoca-kumbeti-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347285",
+    "name": "Surp Yerrortutyun Ermeni Kilisesi",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347285/surp-yerrortutyun-ermeni-kilisesi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336909",
+    "name": "Ulu Cami",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336909/ulu-cami-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Sivrihisar Ulu Cami’nin geniş iç mekânını ahşap direkler taşır. Ahşap minber, devşirme başlıklar ve kilimler yapının ziyaret sırasında fark edilebilecek ayrıntılarıdır."
+  },
+  {
+    "id": "ktb-336972",
+    "name": "Anadolu Üniversitesi Çağdaş Sanatlar Müzesi",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336972/anadolu-universitesi-cagdas-sanatlar-muzesi-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337030",
+    "name": "Zeyköy",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337030/zeykoy-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336904",
+    "name": "Zaimağa Konağı",
+    "region": "Sivrihisar",
+    "district": "Sivrihisar",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336904/zaimaga-konagi-sivrihisar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336963",
+    "name": "Adalar",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336963/adalar.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336985",
+    "name": "Büyük Park (Anıt Park)",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336985/buyuk-park-anit-park-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347289",
+    "name": "Esminyatürk",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347289/esminyaturk-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347091",
+    "name": "Atila Özer Karikatürlü Ev",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347091/atila-ozer-karikaturlu-ev-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336982",
+    "name": "Bilim Deney Merkezi",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336982/bilim-deney-merkezi-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336925",
+    "name": "İsmet İnönü (Doktorlar) Caddesi",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336925/ismet-inonu-doktorlar-caddesi-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337015",
+    "name": "Gökçekısık Kalesi",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337015/gokcekisik-kalesi-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336970",
+    "name": "Haller Gençlik Merkezi",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336970/haller-genclik-merkezi-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336986",
+    "name": "Heykel Park",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336986/heykel-park-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336980",
+    "name": "Kentpark",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336980/kentpark-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336924",
+    "name": "Köprübaşı",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336924/koprubasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336965",
+    "name": "Kızılcıklı Mahmut Pehlivan Caddesi",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336965/kizilcikli-mahmut-pehlivan-caddesi-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336984",
+    "name": "Japon Bahçesi",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336984/japon-bahcesi-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336983",
+    "name": "Sabancı Uzay Evi",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336983/sabanci-uzay-evi-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336981",
+    "name": "Sazova Bilim Kültür ve Sanat Parkı",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336981/sazova-bilim-kultur-ve-sanat-parki-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336995",
+    "name": "Musaözü",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336995/musaozu-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Musaözü, gölet çevresinde günübirlik dinlenme amacıyla tanıtılır. Bu kaynak, güncel çadır veya karavan geceleme iznini doğrulamaz; izin ayrıca ilgili kurumdan sorulmalıdır."
+  },
+  {
+    "id": "ktb-336964",
+    "name": "Porsuk Nehri",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336964/porsuk-nehri.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336966",
+    "name": "TCDD Eskişehir Tren Garı",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336966/tcdd-eskisehir-tren-gari-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-339755",
+    "name": "TÜRASAŞ Devrim Arabaları Müzesi",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-339755/turasas-devrim-arabalari-muzesi-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336973",
+    "name": "TCDD Eskişehir Müzesi",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336973/tcdd-eskisehir-muzesi-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336989",
+    "name": "Toprak Dede Hayrettin Karaca Parkı",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336989/toprak-dede-hayrettin-karaca-parki-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336961",
+    "name": "Alaaddin Camii",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336961/alaaddin-camii-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-342019",
+    "name": "Akoğlan Camii",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-342019/akoglan-camii-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336967",
+    "name": "Vecihi Hürkuş Havacılık Parkı",
+    "region": "Tepebaşı",
+    "district": "Tepebaşı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336967/vecihi-hurkus-havacilik-parki-tepebasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336916",
+    "name": "Arasta Çarşısı",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336916/arasta-carsisi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336991",
+    "name": "Botanik Park",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336991/botanik-park-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-339423",
+    "name": "Cumhuriyet Tarihi Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-339423/cumhuriyet-tarihi-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347094",
+    "name": "Atlıhan El Sanatları Çarşısı",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347094/atlihan-el-sanatlari-carsisi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-339434",
+    "name": "Çağdaş Cam Sanatları Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-339434/cagdas-cam-sanatlari-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336990",
+    "name": "Çağdaş Seramik Park",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336990/cagdas-seramik-park-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347248",
+    "name": "Dede Korkut Anıt Duvarı",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347248/dede-korkut-anit-duvari-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336923",
+    "name": "Çukur Çarşı",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336923/cukur-carsi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337016",
+    "name": "Dede Korkut Parkı",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337016/dede-korkut-parki-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337019",
+    "name": "Eskişehir Hava Şehitliği",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337019/eskisehir-hava-sehitligi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-339441",
+    "name": "Eğitim Karikatürleri Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-339441/egitim-karikaturleri-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-449029",
+    "name": "Eskişehir Hamam Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-449029/eskisehir-hamam-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336987",
+    "name": "Engelsiz Park",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336987/engelsiz-park-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347288",
+    "name": "Eskişehir Sanatları Çarşısı",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347288/eskisehir-sanatlari-carsisi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-449018",
+    "name": "Eskişehir Kurtuluş Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-449018/eskisehir-kurtulus-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-456696",
+    "name": "Eskişehir Ticaret ve Sanayi Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-456696/eskisehir-ticaret-ve-sanayi-muzesi---eto-muze-odunpazar-.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-339469",
+    "name": "ETİ Arkeoloji Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-339469/eti-arkeoloji-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "ETİ Arkeoloji Müzesi, Eskişehir ve çevresindeki kazılardan, araştırmalardan ve diğer edinimlerden gelen kültür varlıklarını buluşturur. Kent merkezindeki ziyaret, ilçelerdeki antik yerleşimleri anlamak için bağlam sunar."
+  },
+  {
+    "id": "ktb-337022",
+    "name": "İshak Fakih Camii (Ak Cami)",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337022/ishak-fakih-camii-ak-cami-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-449021",
+    "name": "İmren Erşen Oya Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-449021/imren-ersen-oya-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336921",
+    "name": "İki Eylül Caddesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336921/iki-eylul-caddesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347386",
+    "name": "Hamamyolu Caddesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347386/hamamyolu-caddesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336915",
+    "name": "Kırk Ambar Çarşısı",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336915/kirk-ambar-carsisi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337001",
+    "name": "Karacahisar Kalesi  (Osmanlı’nın İlk Fethettiği Kale)",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337001/karacahisar-kalesi--osmanlinin-ilk-fethettigi-kale-odun-.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Karacahisar, Bizans kale kent geleneği ve Osmanlı’nın erken tarihi açısından ele alınır. Kaynak, bazı tarihsel yorumların belgelendirme sınırlarını da açıklar; kazı alanına giriş koşulları ayrıca teyit edilmelidir."
+  },
+  {
+    "id": "ktb-339638",
+    "name": "Kent Belleği Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-339638/kent-bellegi-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337018",
+    "name": "Kanlıpınar Şehitliği",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337018/kanlipinar-sehitligi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336893",
+    "name": "Kurşunlu Camii ve Külliyesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336893/kursunlu-camii-ve-kulliyesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336894",
+    "name": "Odunpazarı Evleri",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336894/odunpazari-evleri.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-339668",
+    "name": "Lületaşı Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-339668/luletasi-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-470159",
+    "name": "OMM",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-470159/omm---odunpazari-modern-muze-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336988",
+    "name": "Şehr-i Aşk Adası",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336988/sehr-i-ask-adasi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336912",
+    "name": "Reşadiye Camii",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336912/resadiye-camii-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336992",
+    "name": "Regülatör Park",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336992/regulator-park-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336917",
+    "name": "Osmanlı Evi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336917/osmanli-evi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336994",
+    "name": "Şelale Mesire Yeri",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336994/selale-mesire-yeri-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336979",
+    "name": "Şehr-i Derya Parkı",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336979/sehr-i-derya-parki-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336918",
+    "name": "Şeyh Şehabeddin Sühreverdi Türbesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336918/seyh-sehabeddin-suhreverdi-turbesi---sali-tekkesi-odunp-.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336911",
+    "name": "Şelale Park",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336911/selale-park-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336920",
+    "name": "Taşbaşı",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336920/tasbasi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-456690",
+    "name": "Uluslararası Çağdaş Seramik Sanatları Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-456690/uluslararasi-cagdas-seramik-sanatlari-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-340164",
+    "name": "Yılmaz Büyükerşen Balmumu Heykeller Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-340164/yilmaz-buyukersen-balmumu-heykeller-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336978",
+    "name": "Tarihî Turan Numune Mektebi Ders Araçları Sergievi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336978/tarihi-turan-numune-mektebi-ders-araclari-sergievi-odun-.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-456689",
+    "name": "Zuhal Yorgancıoğlu Moda Tasarım Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-456689/zuhal-yorgancioglu-moda-tasarim-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-448999",
+    "name": "Yunus Emre Yazı Sanatları Müzesi",
+    "region": "Odunpazarı",
+    "district": "Odunpazarı",
+    "category": "museum",
+    "source": "https://eskisehir.ktb.gov.tr/TR-448999/yunus-emre-yazi-sanatlari-muzesi-odunpazari.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-342023",
+    "name": "Alçengel Camii (Şeyh Kuddusi Camii) Haziresi",
+    "region": "İnönü",
+    "district": "İnönü",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-342023/alcengel-camii-seyh-kuddusi-camii-haziresi-inonu.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337032",
+    "name": "İnönü Mağarası",
+    "region": "İnönü",
+    "district": "İnönü",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337032/inonu-magarasi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-342018",
+    "name": "Akkaya Tepesi",
+    "region": "Mihalıççık",
+    "district": "Mihalıççık",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-342018/akkaya-tepesi-mihaliccik.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337025",
+    "name": "Sultan Alaaddin Cami",
+    "region": "İnönü",
+    "district": "İnönü",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337025/sultan-alaaddin-cami-inonu.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336971",
+    "name": "İnönü Savaşları Karargah Evi",
+    "region": "İnönü",
+    "district": "İnönü",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336971/inonu-savaslari-karargah-evi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336993",
+    "name": "Sakarya Başı",
+    "region": "Çifteler",
+    "district": "Çifteler",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336993/sakarya-basi-cifteler.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Çifteler’deki Sakaryabaşı, bir araya gelen doğal su kaynaklarıyla Sakarya Nehri’nin başlangıç alanıdır. Piknik ve dinlenme bilgisi, kamp izni veya suya giriş güvenliği anlamına gelmez."
+  },
+  {
+    "id": "ktb-336907",
+    "name": "Çalçı Köyü Camii",
+    "region": "Mihalıççık",
+    "district": "Mihalıççık",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336907/calci-koyu-camii-mihaliccik.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337005",
+    "name": "Deretop Kanyonu",
+    "region": "Mihalıççık",
+    "district": "Mihalıççık",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337005/deretop-kanyonu-mihaliccik.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336905",
+    "name": "Yunus Emre Külliyesi ve Türbesi",
+    "region": "Mihalıççık",
+    "district": "Mihalıççık",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336905/yunus-emre-kulliyesi-ve-turbesi-mihaliccik.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347247",
+    "name": "Çatacık Orman İçi Dinlenme Yeri",
+    "region": "Mihalıççık",
+    "district": "Mihalıççık",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347247/catacik-orman-ici-dinlenme-yeri-mihaliccik.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Çatacık, Sündiken Dağları çevresindeki orman dokusu ve sarıçamlarıyla tanıtılan bir dinlenme alanıdır. Mevsimsel orman erişimi ve geceleme koşulları ayrıca doğrulanmalıdır."
+  },
+  {
+    "id": "ktb-337012",
+    "name": "Berberini Kaya Kilisesi",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337012/berberini-kaya-kilisesi-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-342135",
+    "name": "Asar Kale",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-342135/asar-kale-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347125",
+    "name": "Bahşeyiş Anıtı",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347125/bahseyis-aniti-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Gökbahçe yakınındaki Bahşeyiş Anıtı, kayaya biçimlendirilmiş çatısı ve derin nişiyle bir yapı cephesini canlandırır. Yörede Bahşiş Çeşmesi adı da kullanılır."
+  },
+  {
+    "id": "ktb-336941",
+    "name": "Delikli Kaya Nekropolü",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336941/delikli-kaya-nekropolu-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337013",
+    "name": "Körestan Nekropolü",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337013/korestan-nekropolu-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337026",
+    "name": "Develik Han",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337026/develik-han-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336940",
+    "name": "Himmet Baba Türbesi",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336940/himmet-baba-turbesi-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347358",
+    "name": "Fethiye Ören Yeri",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347358/fethiye-oren-yeri-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336926",
+    "name": "Melik Gazi Türbesi",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336926/melik-gazi-turbesi-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337029",
+    "name": "Selçuklu Hamamı",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337029/selcuklu-hamami-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337003",
+    "name": "Peribacaları",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337003/peribacalari-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336888",
+    "name": "Kümbet Vadisi",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336888/kumbet-vadisi-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Kümbet Vadisi’nde kaya anıtları, Solon’un Mezarı ve Himmet Baba Türbesi farklı dönemleri bir araya getirir. Solon’un Mezarı, Frig ve Roma kullanımlarıyla çok katmanlı bir örnektir."
+  },
+  {
+    "id": "ktb-336884",
+    "name": "Seyyid Battal Gazi Külliyesi ve Türbesi",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336884/seyyid-battal-gazi-kulliyesi-ve-turbesi-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Seyyid Battal Gazi Külliyesi, türbe çevresinde gelişen ve zamanla eğitim, ibadet ve ağırlama mekânları eklenen bir bütündür. Kaynaktaki menkıbeler, belgelenmiş yapı tarihinden ayrı okunmalıdır."
+  },
+  {
+    "id": "ktb-336896",
+    "name": "Seyyid Sultan Şüceaddin Veli Külliyesi ve Türbesi",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336896/seyyid-sultan-suceaddin-veli-kulliyesi-ve-turbesi-seyit-.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336939",
+    "name": "Solon’un Mezarı",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336939/solonun-mezari---aslanli-mabet-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336908",
+    "name": "Üryan Baba Türbesi",
+    "region": "Seyitgazi",
+    "district": "Seyitgazi",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336908/uryan-baba-turbesi-seyitgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337027",
+    "name": "Karahöyük/Midaio",
+    "region": "Alpu",
+    "district": "Alpu",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337027/karahoyukmidaio-alpu.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Alpu Ovası’ndaki Karahöyük/Midaion, uzun süreli yerleşim izleri taşıyan bir höyüktür. Burayla ilişkili bazı buluntular ETİ Arkeoloji Müzesi’nde korunur."
+  },
+  {
+    "id": "ktb-436403",
+    "name": "Sakarıkaracaören Köyü",
+    "region": "Alpu",
+    "district": "Alpu",
+    "category": "city",
+    "source": "https://eskisehir.ktb.gov.tr/TR-436403/sakarikaracaoren-koyu-alpu.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347093",
+    "name": "Avlakkaya Kanyonu",
+    "region": "Mihalgazi",
+    "district": "Mihalgazi",
+    "category": "nature",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347093/avlakkaya-kanyonu-mihalgazi.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Avlakkaya Kanyonu, akarsu, kayalık oluşumlar ve arkeolojik izlerle birlikte tanıtılır. Güncel parkur güvenliği, erişim ve koruma koşulları kaynaktaki genel tanıtımdan ayrı doğrulanmalıdır."
+  },
+  {
+    "id": "ktb-336927",
+    "name": "Büğdüz Köyü Camii",
+    "region": "Alpu",
+    "district": "Alpu",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336927/bugduz-koyu-camii-alpu.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-340589",
+    "name": "Akhisar Kalesi",
+    "region": "Han",
+    "district": "Han",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-340589/akhisar-kalesi-han.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-337024",
+    "name": "Yazılıkaya Köyü Cami",
+    "region": "Han",
+    "district": "Han",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-337024/yazilikaya-koyu-cami-han.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-336948",
+    "name": "Hüsrev Paşa Camii",
+    "region": "Han",
+    "district": "Han",
+    "category": "faith",
+    "source": "https://eskisehir.ktb.gov.tr/TR-336948/husrev-pasa-camii-han.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": ""
+  },
+  {
+    "id": "ktb-347611",
+    "name": "Han Yeraltı Yerleşimi",
+    "region": "Han",
+    "district": "Han",
+    "category": "phrygia",
+    "source": "https://eskisehir.ktb.gov.tr/TR-347611/han-yeralti-yerlesimi-han.html",
+    "checkedAt": "2026-09-09",
+    "detailTr": "Han’ın yeraltına oyulmuş oda ve koridorları, yerleşimin farklı dönemlerine ilişkin sorular barındırır. Kaynak, galerilerin kesin tarihini ve kullanım amacını kanıtlayan verilerin sınırlı olduğunu açıkça belirtir."
+  }
+]

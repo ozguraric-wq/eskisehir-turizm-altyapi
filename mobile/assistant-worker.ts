@@ -1,4 +1,5 @@
-import { handleAssistantApi,type AssistantEnv } from "../lib/mobile/assistant-server";
-// Optional independent backend for the Android/iOS binaries and GitHub Pages.
-// Use an HTTPS API origin under the institution's hosting account.
-export default {fetch:(request:Request,env:AssistantEnv)=>handleAssistantApi(request,env)};
+import {handleAssistantApi,type AssistantEnv} from "../lib/mobile/assistant-server";
+import {handleSocialApi} from "../lib/social/server";
+import type {SocialEnv} from "../lib/social/server-contract";
+// Standalone entrypoint never trusts dispatcher identity headers supplied by a visitor.
+export default {fetch:(request:Request,env:AssistantEnv&SocialEnv)=>new URL(request.url).pathname.startsWith("/api/community/")?handleSocialApi(request,env,"standalone"):handleAssistantApi(request,env)};

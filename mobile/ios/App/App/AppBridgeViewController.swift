@@ -1,6 +1,7 @@
 import Capacitor
 import UIKit
 import AVFoundation
+import Security
 
 struct ExportedPageRouter: Router {
     var basePath: String = ""
@@ -15,7 +16,7 @@ struct ExportedPageRouter: Router {
 }
 class AppBridgeViewController: CAPBridgeViewController {
     override func router() -> Router { return ExportedPageRouter() }
-    override func capacitorDidLoad() { bridge?.registerPluginInstance(TripPrintPlugin()); bridge?.registerPluginInstance(GuideSpeechPlugin()) }
+    override func capacitorDidLoad() { bridge?.registerPluginInstance(TripPrintPlugin()); bridge?.registerPluginInstance(GuideSpeechPlugin()); bridge?.registerPluginInstance(CommunityVaultPlugin()) }
 }
 @objc(TripPrintPlugin)
 public class TripPrintPlugin: CAPPlugin, CAPBridgedPlugin {
@@ -60,4 +61,15 @@ public class GuideSpeechPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizer
     @objc func stop(_ call:CAPPluginCall){DispatchQueue.main.async{self.stopCurrent();call.resolve()}}
     public func speechSynthesizer(_ synthesizer:AVSpeechSynthesizer,didFinish utterance:AVSpeechUtterance){if utterance===activeUtterance{activeCall?.resolve();activeCall=nil;activeUtterance=nil}}
     public func speechSynthesizer(_ synthesizer:AVSpeechSynthesizer,didCancel utterance:AVSpeechUtterance){if utterance===activeUtterance{activeCall?.resolve();activeCall=nil;activeUtterance=nil}}
+}
+
+@objc(CommunityVaultPlugin)
+public class CommunityVaultPlugin: CAPPlugin, CAPBridgedPlugin {
+ public let identifier="CommunityVaultPlugin"
+ public let jsName="CommunityVault"
+ public let pluginMethods:[CAPPluginMethod]=[CAPPluginMethod(name:"get",returnType:CAPPluginReturnPromise),CAPPluginMethod(name:"set",returnType:CAPPluginReturnPromise),CAPPluginMethod(name:"remove",returnType:CAPPluginReturnPromise)]
+ private func query(_ call:CAPPluginCall)->[String:Any]? {guard let key=call.getString("key"),["session","oauth"].contains(key) else{return nil};return [kSecClass as String:kSecClassGenericPassword,kSecAttrService as String:"com.rateldijital.etahb.community",kSecAttrAccount as String:key]}
+ @objc func get(_ call:CAPPluginCall){guard var q=query(call) else{call.reject("Invalid key");return};q[kSecReturnData as String]=true;q[kSecMatchLimit as String]=kSecMatchLimitOne;var value:CFTypeRef?;let status=SecItemCopyMatching(q as CFDictionary,&value);if status==errSecItemNotFound{call.resolve(["value":NSNull()]);return};guard status==errSecSuccess,let bytes=value as? Data,let text=String(data:bytes,encoding:.utf8) else{call.reject("Secure storage unavailable");return};call.resolve(["value":text])}
+ @objc func set(_ call:CAPPluginCall){guard let q=query(call),let value=call.getString("value"),value.count<8192,let data=value.data(using:.utf8) else{call.reject("Invalid value");return};let fields:[String:Any]=[kSecValueData as String:data,kSecAttrAccessible as String:kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly];let status=SecItemUpdate(q as CFDictionary,fields as CFDictionary);if status==errSecItemNotFound{var insert=q;for(k,v)in fields{insert[k]=v};guard SecItemAdd(insert as CFDictionary,nil)==errSecSuccess else{call.reject("Secure storage unavailable");return}}else if status != errSecSuccess{call.reject("Secure storage unavailable");return};call.resolve()}
+ @objc func remove(_ call:CAPPluginCall){guard let q=query(call)else{call.reject("Invalid key");return};let status=SecItemDelete(q as CFDictionary);if status==errSecSuccess || status==errSecItemNotFound{call.resolve()}else{call.reject("Secure storage unavailable")}}
 }

@@ -4,9 +4,12 @@
   "compatibility_date": "2026-09-08",
   "vars": {
     "OPENAI_MODEL": "gpt-4.1-mini",
+    "SOCIAL_PUBLIC_ORIGIN": "https://YOUR-WORKER.workers.dev",
+    "SOCIAL_WEB_ORIGIN": "https://ozguraric-wq.github.io/eskisehir-turizm-altyapi",
     "AI_DAILY_LIMIT": "200",
     "AI_ALLOWED_ORIGINS": "https://ozguraric-wq.github.io,https://localhost,capacitor://localhost"
   },
+  "r2_buckets": [{"binding":"BUCKET","bucket_name":"etahb-community-private-media"}],
   "d1_databases": [{
     "binding": "DB",
     "database_name": "etahb-mobil-asistan",
