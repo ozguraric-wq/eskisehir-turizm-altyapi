@@ -5,6 +5,7 @@ import {mkdtemp,mkdir,readFile,readdir,rm} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {DatabaseSync} from 'node:sqlite';
+import {Miniflare} from 'miniflare';
 await mkdir('work',{recursive:true});const dir=await mkdtemp(resolve('work/event-tests-'));
 await build({stdin:{contents:`export * from './lib/events/catalog';export * from './lib/events/sources';export * from './lib/events/importers';export * from './lib/events/server';export * from './lib/events/venues';export * from './lib/routing/engine';export * from './lib/routing/exports';export * from './lib/mobile/trips';export * from './lib/qr/links';export {CATALOG_VERSION} from './lib/routing/data';`,resolveDir:process.cwd()},outfile:join(dir,'entry.mjs'),bundle:true,platform:'node',format:'esm',logLevel:'silent'});
 const m=await import(pathToFileURL(join(dir,'entry.mjs')));
@@ -74,4 +75,23 @@ test('reviewed cancellation supersedes imported records and cannot be resurrecte
  await m.writeReviewedEvents(new Request('https://events.test/api/events',{method:'PUT',body:JSON.stringify({sourceId:'ebb',events:[{...e,status:'cancelled'}]})}),env);
  const current=await m.getEventCatalog(env);assert.equal(current.events.filter(x=>x.id===e.id).length,1);assert.equal(current.events.find(x=>x.id===e.id).status,'cancelled');
  await assert.rejects(m.writeReviewedEvents(new Request('https://events.test/api/events',{method:'PUT',body:JSON.stringify({sourceId:'ebb',events:[{...e,sourceUrl:'https://evil.example/'}]})}),env));
+});
+
+test('official fetch options work in the deployed Workers runtime and redirects remain blocked',async()=>{
+ const compiled=await build({stdin:{contents:`import {fetchOfficial} from './lib/events/server';import {sourceById} from './lib/events/sources';
+ export default {async fetch(){let calls=0;const fetcher=async(url,init)=>{new Request(url,init);calls++;return calls===1?new Response('Official calendar response'):new Response('',{status:302,headers:{Location:'https://outside.example/'}});};
+ const html=await fetchOfficial(sourceById.tepebasi.url,sourceById.tepebasi,fetcher);let redirectRejected=false;try{await fetchOfficial(sourceById.tepebasi.url,sourceById.tepebasi,fetcher);}catch(e){redirectRejected=e.message==='source_http_302';}return Response.json({html,redirectRejected,calls});}};`,resolveDir:process.cwd()},write:false,bundle:true,platform:'browser',format:'esm',logLevel:'silent'});
+ const mf=new Miniflare({modules:true,compatibilityDate:'2026-05-15',script:compiled.outputFiles[0].text});
+ try{const response=await mf.dispatchFetch('https://event-test.invalid/');assert.equal(response.status,200);assert.deepEqual(await response.json(),{html:'Official calendar response',redirectRejected:true,calls:2});}finally{await mf.dispose();}
+});
+
+test('manual updates can recover an older failed source without repeated requests or false verification',async()=>{
+ const now=new Date().toISOString(),older=new Date(Date.now()-6*60*1000).toISOString();
+ sqlite.prepare('UPDATE city_event_feeds SET attempted_at=?,lease_until=0').run(now);
+ sqlite.prepare("UPDATE city_event_feeds SET attempted_at=?,state='unavailable' WHERE id='valilik'").run(older);
+ let calls=0;const fetcher=async()=>{calls++;return new Response('<html><body>'+('Official announcements. '.repeat(20))+'</body></html>');};
+ await m.refreshEventSources({DB:db},fetcher);assert.equal(calls,0);
+ await m.refreshEventSources({DB:db},fetcher,true);assert.equal(calls,1);
+ const recovered=(await m.getEventCatalog({DB:db})).sources.find(s=>s.sourceId==='valilik');assert.equal(recovered.state,'no-structured-events');assert.ok(Date.parse(recovered.checkedAt)>=Date.parse(now));
+ await m.refreshEventSources({DB:db},fetcher,true);assert.equal(calls,1);
 });
