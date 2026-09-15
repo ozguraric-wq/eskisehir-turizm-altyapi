@@ -6,6 +6,7 @@ Son proje dosyası ve EGFF Uygulama Sunumu esas alınarak hazırlanmıştır. İ
 
 - Ana sayfa: Festival, Akademi, Frigya Rotası ve proje ayrıntıları.
 - Ödüller: Beş lületaşı tasarım önerisi, anlamları, ilgili bölümler ve karar mercileri. Altın Midas, kurmaca ve belgeselde ayrı ayrı verilir. Doğrudan bağlantı: `#/festival?bolum=oduller`.
+- Sponsorlar: Dört destek düzeyi, on sponsorluk alanı ve on bir firma örneği. Kapsam, katkı biçimi, görünürlük, sonuç raporu ve firma seçim gerekçeleri açıklanır. Her firma **DEMO SPONSOR** olarak etiketlidir; gerçek bir anlaşma veya firma onayı ifade etmez. Doğrudan bağlantı: `#/sponsorlar`. Araştırma ve resmî kaynaklar: [sponsorship-research.md](docs/sponsorship-research.md).
 - Film başvurusu: Dört doğrudan bölüm, beş adımlı form, ortak yönetmen, yaş / süre / yapım tarihi kontrolü, izleme bağlantısı, metinler, belge ekleri, taslak kaydı, mükerrer film kontrolü.
 - Takip: Başvuru e-postası + gizli takip kodu; işlem geçmişi ve düzeltme gönderimi.
 - Katılım: Akademi, çekim mekânı, gençlik jürisi ve gönüllü başvuruları.
@@ -62,6 +63,8 @@ node --test tests/workflow.test.mjs
 ## Bu depodaki yayın
 
 Kaynak kod `festival/` klasöründedir. GitHub Pages yayını `public/film-festivali/` içindeki derlenmiş dosyalardan oluşur. Güncellemede `festival/` içinde `pnpm build` çalıştırılır; oluşan `dist/` içeriği deponun `public/film-festivali/` klasörüne kopyalanır ve birlikte commit edilir. Depodaki mevcut Pages iş akışı yayını tamamlar.
+
+Sponsorluk içeriği `lib/festival/sponsors.ts` içinde tutulur. Örnek firmalar, ana sayfa ve Sponsorlar ekranında aynı veriden gösterilir. Gerçek yayında her yerleşim ayrı anlaşma ve marka kullanım onayıyla güncellenmeli; onaylanmayan demo firmaları kaldırılmalıdır. Bu sürüm sponsorluk teklifi göndermez, şirketlerle iletişim kurmaz veya ücret toplamaz.
 
 ## Başvuru sunucusu
 

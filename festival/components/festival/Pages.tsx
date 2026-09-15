@@ -9,6 +9,7 @@ import {LinkButton,SectionHeading,PageIntro,Notice,Modal,Field,Choice,EmptyState
 import {download,isDemo,reserve} from '@/lib/festival/service';
 import {toast} from 'sonner';
 import {AwardsGallery,AwardsTeaser} from './Awards';
+import {SponsorsTeaser} from './Sponsors';
 const asset=(path:string)=>'./'+path;
 export function Home(){return <>
  <section className="hero"><img className="hero-image" src={asset('images/festival-hero.webp')} alt="Kırmızı ışık altında kıvrılan analog film şeridi; festival için üretilmiş görsel" fetchPriority="high"/><div className="hero-shade"/><div className="hero-content"><div className="edition"><span>01 / İLK EDİSYON</span><span>ESKİŞEHİR, TÜRKİYE</span></div><p className="hero-kicker">ESKİŞEHİR GENÇLİK FİLM FESTİVALİ</p><h1>Hikâyen<br/>burada <em>başlasın.</em></h1><p className="hero-copy">Yeni bakışlar. Cesur hikâyeler.<br/>Sinemanın genç sesi Eskişehir’de buluşuyor.</p><div className="hero-actions"><LinkButton to="basvur" light>Filminle başvur</LinkButton><a href="#/festival" className="text-link">Festivali keşfet <ArrowRight size={19}/></a></div><div className="hero-bottom"><span className="hero-date">24—27 <b>HAZİRAN 2027</b></span><span className="hero-small">FESTİVAL · AKADEMİ · FRİGYA ROTASI<br/>Planlanan ilk edisyon</span></div></div><span className="image-note">Festival için üretilmiş görsel</span></section>
@@ -18,6 +19,7 @@ export function Home(){return <>
  <AwardsTeaser/>
  <section className="split-feature"><div className="feature-picture"><img src={asset('images/midas.webp')} alt="Han ilçesinde Midas Anıtı, Yazılıkaya" loading="lazy"/><span className="photo-caption">YAZILIKAYA / HAN</span></div><div className="feature-copy"><span className="eyebrow">FRİGYA ROTASI</span><h2>Bazı hikâyeler<br/>mekânını bekler.</h2><p>Frigya’nın kaya anıtlarından Sivrihisar’ın sokaklarına. Eskişehir’in ilçeleri, genç sinemacıların üretimine açılan bir çekim ve gösterim ağına dönüşüyor.</p><LinkButton to="frigya">Rotayı keşfet</LinkButton><small className="photo-credit">Fotoğraf: <a href="https://commons.wikimedia.org/wiki/File:Midas_Monument,_Yaz%C4%B1l%C4%B1kaya.jpg" target="_blank" rel="noreferrer">Zeynel Cebeci</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a> · Görsel alana uyarlanmıştır.</small></div></section>
  <section className="section"><SectionHeading eyebrow="TAKVİMİNE NOT ET" title="İlk kareden son alkışa."><LinkButton to="program" outline>Festival programı</LinkButton></SectionHeading><div className="dates-grid">{[timeline[1],timeline[2],timeline[5],timeline[6]].map((x,i)=><div key={x[0]} className={'date-card '+(i===3?'red':'')}><span>0{i+1}</span><h3>{x[0]}</h3><p>{x[1]}</p></div>)}</div></section>
+ <SponsorsTeaser/>
  <section className="join-banner"><span className="eyebrow">ESKİŞEHİR’DE SİNEMAYA YER VAR.</span><h2>Şimdi sıra<br/><em>senin hikâyende.</em></h2><LinkButton to="basvur" light>Başvurunu hazırla</LinkButton></section>
  </>;}
 
