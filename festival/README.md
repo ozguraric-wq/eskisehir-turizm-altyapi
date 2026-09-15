@@ -5,6 +5,7 @@ Son proje dosyası ve EGFF Uygulama Sunumu esas alınarak hazırlanmıştır. İ
 ## Kullanım
 
 - Ana sayfa: Festival, Akademi, Frigya Rotası ve proje ayrıntıları.
+- Ödüller: Beş lületaşı tasarım önerisi, anlamları, ilgili bölümler ve karar mercileri. Altın Midas, kurmaca ve belgeselde ayrı ayrı verilir. Doğrudan bağlantı: `#/festival?bolum=oduller`.
 - Film başvurusu: Dört doğrudan bölüm, beş adımlı form, ortak yönetmen, yaş / süre / yapım tarihi kontrolü, izleme bağlantısı, metinler, belge ekleri, taslak kaydı, mükerrer film kontrolü.
 - Takip: Başvuru e-postası + gizli takip kodu; işlem geçmişi ve düzeltme gönderimi.
 - Katılım: Akademi, çekim mekânı, gençlik jürisi ve gönüllü başvuruları.
@@ -83,6 +84,7 @@ Bu oturumda tarayıcı üzerinde görsel QA yapılmadı; mobil düzen 600 / 900 
 ## Görsel kaynakları
 
 - Ana görsel: bu festival sitesi için ImageGen ile oluşturuldu; gerçek festival fotoğrafı değildir.
+- Ödül görselleri: ImageGen ile bu site için üretilen beş kavramsal lületaşı tasarımı. Gerçek üretilmiş ödül fotoğrafları değildir. Altın/gümüş renk vurguları görsel önerinin parçasıdır; tüm ödüllerin ana malzemesi kaynak belgelere göre lületaşıdır. Nihai tasarım ve işçilik ustalarla netleşir. Görseller 640 ve 960 piksel WebP olarak sunulur; kırpılmadan, orantılı yerleşir.
 - Midas Anıtı: Zeynel Cebeci, Wikimedia Commons, CC BY-SA 4.0. Kaynak: https://commons.wikimedia.org/wiki/File:Midas_Monument,_Yaz%C4%B1l%C4%B1kaya.jpg . WebP boyutlandırması ve görüntü alanına kadraj uyarlaması yapılmıştır. Türetilen fotoğraf aynı lisansla sunulur. Lisans: https://creativecommons.org/licenses/by-sa/4.0/ .
 - Proje dosyası: Imeras Pro., Ağustos 2026. Kullanıcının sağladığı Word proje dosyası ve uygulama PDF’si içerik kaynağı olarak kullanılmıştır. Özgün dosyalar kamuya açık yayın ve kaynak arşivine dahil edilmemiştir.
 

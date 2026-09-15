@@ -9,3 +9,66 @@
 @media print{.site-header,.demo-bar,footer,.button,.program-tools,.hero-actions,.menu-toggle{display:none!important}body{background:#fff;color:#000}main{min-height:0}.section,.page-intro{padding:20px 0}h1,h2,h3{break-after:avoid}article,tr{break-inside:avoid}}
 
 .day-tabs>label{cursor:pointer;position:relative}.day-tabs>label:focus-within{outline:3px solid #df3328;outline-offset:3px}
+
+/* Planned award gallery: meerschaum objects presented with their stories. */
+.award-teaser{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);padding:0 6%;background:#151718;color:#fff;align-items:center}
+.award-teaser-picture{min-width:0;max-width:490px;justify-self:center;width:100%}
+.award-teaser-picture img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain}
+.award-teaser-copy{padding:54px 3% 54px 8%;min-width:0;max-width:650px}
+.award-teaser .eyebrow{color:#b9bcbf;font-size:.875rem}
+.award-teaser h2{font-size:clamp(2.5rem,4.5vw,4.4rem);line-height:1.06;margin:0 0 25px;letter-spacing:-.045em}
+.award-teaser p{color:#c8cacc;font-size:1rem;line-height:1.75;max-width:420px;margin:0 0 28px}
+.award-teaser .button{white-space:normal;text-align:left}
+.award-teaser small{display:block;margin-top:20px;font-size:.8125rem;color:#a5aaae}
+.award-gallery{background:#101213;scroll-margin-top:110px}
+.award-gallery-inner{max-width:1280px;margin:0 auto}
+.award-gallery .eyebrow{color:#b7bbbd;font-size:.875rem}
+.award-gallery .section-aside p{font-size:1rem;line-height:1.7;color:#c6cacc}
+.award-gallery-meta{display:flex;align-items:center;gap:26px;border-top:1px solid #414548;padding:20px 0 30px}
+.award-gallery-meta>span{font-size:.875rem;font-weight:650;letter-spacing:.07em;color:#e4e3de;flex-shrink:0}
+.award-gallery-meta p{font-size:.9375rem;color:#b7bbbe;margin:0}
+.award-collection{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px}
+.award-object{min-width:0;background:#191c1e;border:1px solid #35393c;display:flex;flex-direction:column}
+.award-object-featured{grid-column:1 / -1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.award-object-figure{margin:0;position:relative;aspect-ratio:4 / 3;background:#151718;overflow:hidden}
+.award-object-figure img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;padding:14px 14px 38px}
+.award-object-figure figcaption{position:absolute;bottom:17px;left:22px;right:22px;display:flex;justify-content:space-between;gap:15px;font-size:.75rem;letter-spacing:.09em;font-weight:650;color:#c6c8ca}
+.award-object-featured .award-object-figure{aspect-ratio:auto;min-height:440px}
+.award-object-copy{padding:32px 34px 36px;min-width:0}
+.award-object-featured .award-object-copy{padding:42px 38px}
+.award-object-copy .award-symbol{font-size:.875rem;line-height:1.5;color:#c7b17a;margin:0 0 14px}
+.award-object-copy h3{font-family:Georgia,serif;font-weight:400;font-size:clamp(2.1rem,3vw,3.1rem);line-height:1.1;letter-spacing:-.035em;color:#f5f3ed;margin:0 0 25px;overflow-wrap:anywhere}
+.award-object-featured h3{font-size:clamp(2.6rem,4vw,4rem)}
+.award-categories{display:grid;gap:12px;border-top:1px solid #3c4043;border-bottom:1px solid #3c4043;padding:16px 0;margin:0 0 25px}
+.award-categories>div{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.award-categories strong{font-size:1rem;font-weight:550;color:#eeece6;line-height:1.5}
+.award-categories span{font-size:.875rem;line-height:1.5;color:#b5b9bc}
+.award-object-copy .award-meaning{font-size:1rem;line-height:1.8;color:#d0d2d3;margin:0}
+.award-form{margin:25px 0 0;display:block}
+.award-form dt{font-size:.875rem;color:#f1eee7;font-weight:650;margin:0 0 7px}
+.award-form dd{font-size:1rem;color:#c2c6c8;line-height:1.75;margin:0}
+.award-object-copy .award-specific-note{font-size:.875rem;color:#aeb4b8;line-height:1.7;margin:22px 0 0}
+.award-craft-story{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:60px;border-top:1px solid #414548;padding:45px 0;margin-top:55px}
+.award-craft-story h3{font-size:clamp(1.9rem,3vw,2.7rem);letter-spacing:-.035em;line-height:1.15;margin:0}
+.award-craft-story p{font-size:1rem;line-height:1.85;color:#c6cacc;margin:0}
+.award-gallery-footer{border-top:1px solid #414548;padding-top:26px;display:flex;align-items:start;justify-content:space-between;gap:45px}
+.award-gallery-footer p{font-size:.875rem;line-height:1.8;color:#aeb3b7;max-width:760px;margin:0}
+.award-gallery-footer .text-link{flex-shrink:0;font-size:.9375rem;min-height:44px;align-items:center}
+@media(max-width:900px){
+ .award-teaser{padding:0 5%}.award-teaser-copy{padding:35px 0 35px 6%}.award-teaser h2{font-size:2.9rem}
+ .award-collection{gap:22px}.award-object-featured .award-object-copy,.award-object-copy{padding:28px 23px}
+ .award-object-featured .award-object-figure{min-height:360px}.award-categories>div{display:block}.award-categories span{display:block;margin-top:4px}
+ .award-craft-story{gap:30px}.award-gallery-footer{display:block}.award-gallery-footer .text-link{margin-top:18px}
+}
+@media(max-width:600px){
+ .award-teaser{grid-template-columns:1fr;padding:12px 6% 44px}.award-teaser-picture{max-width:340px}.award-teaser-copy{padding:0}
+ .award-teaser h2{font-size:2.8rem}.award-teaser p{margin-bottom:24px}.award-teaser small{font-size:.8125rem}
+ .award-gallery{scroll-margin-top:92px}.award-gallery-meta{display:block;padding:20px 0 26px}.award-gallery-meta p{margin-top:8px}
+ .award-collection{grid-template-columns:minmax(0,1fr);gap:28px}.award-object-featured{grid-column:auto;display:flex}
+ .award-object-figure,.award-object-featured .award-object-figure{aspect-ratio:1;min-height:0;width:100%}
+ .award-object-figure figcaption{left:17px;right:17px;bottom:14px;letter-spacing:.065em}
+ .award-object-featured .award-object-copy,.award-object-copy{padding:27px 22px 30px}.award-object-copy h3{font-size:2.35rem}
+ .award-categories{margin-bottom:22px}.award-categories>div{display:block}.award-form{margin-top:22px}
+ .award-craft-story{grid-template-columns:minmax(0,1fr);gap:22px;margin-top:35px;padding:35px 0}
+ .award-gallery-footer{padding-top:24px}.award-gallery-footer .text-link{white-space:normal;flex-wrap:wrap}
+}
