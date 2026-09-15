@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { MobileShell } from "@/components/mobile-shell";
@@ -57,8 +56,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" className={isGitHubPages || isMobile ? "auth-pending" : undefined} data-mobile-app={isMobile ? "" : undefined}>
-      {isGitHubPages || isMobile ? <Script src={`${basePath}/auth.js`} strategy="beforeInteractive" /> : null}
+    <html lang="tr" data-mobile-app={isMobile ? "" : undefined}>
       <body>
         <a className="skip-link site-skip-link" href="#ana-icerik">
           Ana içeriğe geç
